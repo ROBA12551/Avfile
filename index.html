@@ -872,7 +872,11 @@
                 </div>
             </div>
         </aside>
-        
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;">
+    <input type="checkbox" id="alertToggle">
+    Enable Signal Alerts (BUY / SELL)
+</label>
+
         <main class="main-content">
             <div class="analysis-header">
                 <div class="symbol-display">
@@ -1221,9 +1225,7 @@
                 // ===== SIGNAL DETERMINATION =====
                 let signal = 'HOLD';
                 let confidence = 50;
-                let allBuyValid = conditions.buyConditions.every(c => c.value);
-                let allSellValid = conditions.sellConditions.every(c => c.value);
-                
+
                 // HOLD conditions (priority)
                 const holdConditions = [
                     indicators.rsi >= 48 && indicators.rsi <= 55,
@@ -1232,9 +1234,12 @@
                     indicators.macd.status === 'Neutral',
                     riskReward.ratio < 2
                 ];
-                
-                const shouldHold = holdConditions.some(c => c);
-                
+const shouldHold = holdConditions.filter(Boolean).length >= 2;
+const buyScore = conditions.buyConditions.filter(c => c.value).length;
+const sellScore = conditions.sellConditions.filter(c => c.value).length;
+const allBuyValid = buyScore === conditions.buyConditions.length;
+const allSellValid = sellScore === conditions.sellConditions.length;
+           
                 // Determine signal
                 if (shouldHold) {
                     signal = 'HOLD';
@@ -1386,7 +1391,8 @@
             
             // Set up intervals
             setInterval(updateClock, 1000);
-            setInterval(updateMarketData, 5000);
+            addChatMessage('bot', `Analyzing ${analysis.symbol}...`);
+
             
             // Event listeners
             setupEventListeners();
@@ -1427,7 +1433,28 @@
                 });
             });
         }
-        
+        let lastAlertSignal = {};
+
+function triggerAlertIfNeeded(analysis) {
+    const alertEnabled = document.getElementById('alertToggle')?.checked;
+    if (!alertEnabled) return;
+
+    if (analysis.signal === 'BUY' || analysis.signal === 'SELL') {
+        if (lastAlertSignal[analysis.symbol] === analysis.signal) return;
+
+        lastAlertSignal[analysis.symbol] = analysis.signal;
+
+        // ブラウザ通知
+        if (Notification.permission === 'granted') {
+            new Notification(`🚨 ${analysis.signal} SIGNAL`, {
+                body: `${analysis.symbol}\nPrice: $${analysis.price}\nConfidence: ${analysis.confidence}%`,
+            });
+        } else {
+            alert(`${analysis.signal} SIGNAL\n${analysis.symbol}\nConfidence: ${analysis.confidence}%`);
+        }
+    }
+}
+
         function updateSymbolGrid() {
             const symbols = engine.filterByExchange(engine.activeExchange);
             const grid = document.getElementById('symbolGrid');
@@ -1538,7 +1565,7 @@
             if (!analysis) return;
             
             currentAnalysis = analysis;
-            
+            triggerAlertIfNeeded(analysis);
             // Update header
             document.getElementById('currentSymbol').textContent = analysis.symbol;
             document.getElementById('currentPrice').textContent = `$${analysis.price.toFixed(2)}`;
@@ -1846,7 +1873,23 @@
             textarea.style.height = 'auto';
             textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
         }
-        
+        document.addEventListener('DOMContentLoaded', () => {
+    if ('Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
+    }
+if (analysis.signal !== data.previousSignal) {
+    addChatMessage(
+        'bot',
+        `Signal changed for ${analysis.symbol}: ${analysis.signal} (${analysis.confidence}%)`
+    );
+    data.previousSignal = analysis.signal;
+}
+
+});
+
+
+
+
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', initializeUI);
     </script>
