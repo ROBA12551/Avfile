@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Signal Monitor - Professional Trading</title>
+    <title>Quantum Signal AI | Advanced Trading Analysis</title>
     <style>
         * {
             margin: 0;
@@ -12,499 +12,796 @@
         }
         
         :root {
-            --bg-primary: #0a0e27;
-            --bg-secondary: #0f1429;
-            --bg-tertiary: #1a1f3a;
-            --accent: #00d9ff;
-            --accent-light: #4dc9ff;
-            --success: #00ff88;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f1f3f5;
+            --accent: #0088ff;
+            --accent-light: #4dc3ff;
+            --accent-dark: #0066cc;
+            --success: #00cc88;
             --danger: #ff3366;
             --warning: #ffaa00;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0b0;
-            --border: rgba(0, 217, 255, 0.15);
-            --grid-bg: rgba(0, 217, 255, 0.05);
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --border: #e0e0e0;
+            --border-light: #f0f0f0;
+            --shadow: rgba(0, 0, 0, 0.05);
+            --shadow-hover: rgba(0, 136, 255, 0.1);
         }
         
         body {
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: var(--bg-primary);
             color: var(--text-primary);
+            line-height: 1.6;
             height: 100vh;
             overflow: hidden;
         }
         
-        .grid-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 217, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 217, 255, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-            z-index: 0;
-        }
-        
         .container {
             display: grid;
-            grid-template-columns: 1fr 380px;
-            grid-template-rows: 60px 1fr;
+            grid-template-columns: 280px 1fr 400px;
+            grid-template-rows: 72px 1fr;
             height: 100vh;
-            position: relative;
-            z-index: 1;
+            gap: 0;
         }
         
         /* Header */
         .header {
             grid-column: 1 / -1;
-            background: rgba(10, 14, 39, 0.95);
-            backdrop-filter: blur(10px);
+            background: var(--bg-primary);
             border-bottom: 1px solid var(--border);
-            padding: 0 30px;
+            padding: 0 24px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 30px;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px var(--shadow);
+            z-index: 100;
         }
         
         .logo {
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         
-        .status-indicator {
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+        
+        .logo-subtext {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+            font-weight: 400;
+        }
+        
+        .status-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .status-badge {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 11px;
-            padding: 6px 12px;
-            background: rgba(0, 217, 255, 0.1);
-            border: 1px solid var(--border);
-            border-radius: 3px;
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
         }
         
         .status-dot {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
             background: var(--success);
             border-radius: 50%;
-            animation: pulse 1.5s infinite;
+            animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+            50% { opacity: 0.5; }
         }
         
         .time-display {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .search-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-primary);
+            box-shadow: 0 0 0 3px var(--shadow-hover);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            pointer-events: none;
+        }
+        
+        .symbols-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .section-title {
             font-size: 11px;
+            font-weight: 600;
             color: var(--text-secondary);
-            min-width: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+        
+        .symbol-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .symbol-item {
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .symbol-item:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
+            transform: translateX(2px);
+        }
+        
+        .symbol-item.active {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-color: var(--accent);
+            color: white;
+        }
+        
+        .symbol-item.active .symbol-price {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .symbol-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .symbol-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: inherit;
+        }
+        
+        .symbol-desc {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+        
+        .symbol-item.active .symbol-desc {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .symbol-price {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
         
         /* Main Content */
         .main-content {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            gap: 15px;
-            overflow-y: auto;
-        }
-        
-        /* Search Section */
-        .search-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .search-box {
-            flex: 1;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .search-box input {
-            flex: 1;
-            padding: 10px 12px;
-            background: var(--grid-bg);
-            border: 1px solid var(--border);
-            border-radius: 3px;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 11px;
-            transition: all 0.3s;
-        }
-        
-        .search-box input:focus {
-            outline: none;
-            border-color: var(--accent);
-            background: rgba(0, 217, 255, 0.08);
-            box-shadow: 0 0 15px rgba(0, 217, 255, 0.1);
-        }
-        
-        .search-btn {
-            padding: 10px 16px;
-            background: var(--accent);
-            color: var(--bg-primary);
-            border: none;
-            border-radius: 3px;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 11px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .search-btn:hover {
-            background: var(--accent-light);
-            transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(0, 217, 255, 0.3);
-        }
-        
-        /* Symbol Grid */
-        .symbols-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        
-        .symbol-chip {
-            padding: 8px 10px;
-            background: var(--grid-bg);
-            border: 1px solid var(--border);
-            border-radius: 3px;
-            color: var(--accent);
-            cursor: pointer;
-            font-size: 10px;
-            font-weight: bold;
-            font-family: inherit;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            text-align: center;
-        }
-        
-        .symbol-chip:hover {
-            border-color: var(--accent);
-            background: rgba(0, 217, 255, 0.15);
-            transform: translateY(-2px);
-        }
-        
-        .symbol-chip.active {
-            background: var(--accent);
-            color: var(--bg-primary);
-            border-color: var(--accent);
-        }
-        
-        /* Signals Container */
-        .signals-wrapper {
-            flex: 1;
+            background: var(--bg-primary);
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
         
-        .signal-card {
-            background: rgba(26, 31, 58, 0.7);
-            border: 1px solid var(--border);
-            border-left: 3px solid var(--text-secondary);
-            border-radius: 3px;
-            padding: 12px 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            animation: slideIn 0.3s ease-out;
+        .symbol-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-primary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-15px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .signal-card:hover {
-            border-color: var(--accent);
-            background: rgba(0, 217, 255, 0.1);
-            transform: translateX(3px);
-        }
-        
-        .signal-card.buy {
-            border-left-color: var(--success);
-        }
-        
-        .signal-card.buy:hover {
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
-        }
-        
-        .signal-card.sell {
-            border-left-color: var(--danger);
-        }
-        
-        .signal-card.sell:hover {
-            box-shadow: 0 0 20px rgba(255, 51, 102, 0.15);
-        }
-        
-        .signal-card.neutral {
-            border-left-color: var(--warning);
-        }
-        
-        .signal-header {
+        .current-symbol {
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .symbol-main-info {
+            display: flex;
             align-items: center;
-            margin-bottom: 8px;
+            gap: 16px;
         }
         
-        .signal-symbol {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--accent);
-            letter-spacing: 1px;
+        .symbol-badge {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
         
-        .signal-badge {
-            padding: 2px 8px;
-            border-radius: 2px;
-            font-size: 9px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .signal-badge.buy {
-            background: rgba(0, 255, 136, 0.2);
+        .symbol-badge.buy {
+            background: rgba(0, 204, 136, 0.1);
             color: var(--success);
         }
         
-        .signal-badge.sell {
-            background: rgba(255, 51, 102, 0.2);
+        .symbol-badge.sell {
+            background: rgba(255, 51, 102, 0.1);
             color: var(--danger);
         }
         
-        .signal-badge.neutral {
-            background: rgba(255, 170, 0, 0.2);
+        .symbol-badge.hold {
+            background: rgba(255, 170, 0, 0.1);
             color: var(--warning);
         }
         
-        .signal-metrics {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            font-size: 10px;
+        .price-display {
+            text-align: right;
         }
         
-        .metric {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
+        .current-price {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .price-change {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .price-change.positive {
+            color: var(--success);
+        }
+        
+        .price-change.negative {
+            color: var(--danger);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            transition: all 0.2s;
+        }
+        
+        .metric-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px var(--shadow);
         }
         
         .metric-label {
+            font-size: 12px;
             color: var(--text-secondary);
+            margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            font-size: 8px;
         }
         
         .metric-value {
-            color: var(--accent);
-            font-weight: bold;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
         }
         
-        .strength-meter {
-            height: 2px;
-            background: rgba(0, 217, 255, 0.2);
-            border-radius: 1px;
-            margin-top: 6px;
-            overflow: hidden;
-        }
-        
-        .strength-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--accent-light));
-            transition: width 0.3s;
-        }
-        
-        /* Right Panel - Chat */
-        .chat-panel {
-            background: rgba(26, 31, 58, 0.9);
-            border-left: 1px solid var(--border);
+        .signal-indicators {
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            padding: 15px;
+            gap: 24px;
+        }
+        
+        .indicator-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .indicator-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .indicator-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 12px;
         }
         
+        .indicator-item {
+            padding: 12px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+        
+        /* Chat Panel */
+        .chat-panel {
+            background: var(--bg-primary);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
         .chat-header {
-            font-size: 11px;
-            font-weight: bold;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding-bottom: 10px;
+            padding: 20px;
             border-bottom: 1px solid var(--border);
+            background: var(--bg-primary);
+        }
+        
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .chat-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
         
         .chat-display {
             flex: 1;
             overflow-y: auto;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 16px;
+            max-height: calc(100vh - 200px);
         }
         
-        .chat-msg {
-            padding: 8px 10px;
-            border-radius: 3px;
-            font-size: 9px;
-            line-height: 1.5;
-            word-break: break-word;
+        .chat-message {
+            padding: 16px;
+            border-radius: 12px;
+            max-width: 85%;
             animation: fadeIn 0.3s ease-out;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        .chat-msg.bot {
-            background: rgba(0, 217, 255, 0.1);
-            border-left: 2px solid var(--accent);
-            color: var(--accent);
-        }
-        
-        .chat-msg.user {
-            background: rgba(0, 255, 136, 0.1);
-            border-left: 2px solid var(--success);
-            color: var(--success);
-            align-self: flex-end;
-            max-width: 95%;
-        }
-        
-        .chat-input-box {
-            display: flex;
-            gap: 8px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border);
-        }
-        
-        .chat-input-box input {
-            flex: 1;
-            padding: 8px 10px;
-            background: var(--grid-bg);
+        .chat-message.bot {
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 3px;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 9px;
-            transition: all 0.2s;
+            align-self: flex-start;
         }
         
-        .chat-input-box input:focus {
-            outline: none;
-            border-color: var(--accent);
-            background: rgba(0, 217, 255, 0.08);
+        .chat-message.user {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white;
+            align-self: flex-end;
         }
         
-        .chat-send-btn {
-            padding: 8px 12px;
-            background: var(--accent);
-            color: var(--bg-primary);
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-weight: bold;
-            font-family: inherit;
-            font-size: 9px;
-            transition: all 0.2s;
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .message-sender {
+            font-size: 12px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
-        .chat-send-btn:hover {
-            background: var(--accent-light);
-            transform: translateY(-1px);
+        .message-sender.bot {
+            color: var(--accent);
         }
         
-        /* Scrollbars */
+        .message-sender.user {
+            color: white;
+            opacity: 0.9;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            opacity: 0.6;
+        }
+        
+        .message-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-primary);
+        }
+        
+        .chat-input-wrapper {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 14px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            resize: none;
+            height: 52px;
+            line-height: 1.5;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-primary);
+            box-shadow: 0 0 0 3px var(--shadow-hover);
+        }
+        
+        .send-button {
+            padding: 0 24px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+        }
+        
+        .send-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 136, 255, 0.2);
+        }
+        
+        .send-button:active {
+            transform: translateY(0);
+        }
+        
+        /* Advanced Analysis Components */
+        .confidence-meter {
+            margin-top: 8px;
+        }
+        
+        .confidence-bar {
+            height: 4px;
+            background: var(--border-light);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            border-radius: 2px;
+            transition: width 1s ease;
+        }
+        
+        .strength-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+        
+        .strength-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        
+        .strength-dot.high {
+            background: var(--success);
+        }
+        
+        .strength-dot.medium {
+            background: var(--warning);
+        }
+        
+        .strength-dot.low {
+            background: var(--danger);
+        }
+        
+        /* Scrollbar Styling */
         ::-webkit-scrollbar {
             width: 6px;
         }
         
         ::-webkit-scrollbar-track {
-            background: transparent;
+            background: var(--bg-secondary);
+            border-radius: 3px;
         }
         
         ::-webkit-scrollbar-thumb {
-            background: rgba(0, 217, 255, 0.2);
+            background: var(--border);
             border-radius: 3px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 217, 255, 0.4);
+            background: var(--accent);
         }
         
-        @media (max-width: 1024px) {
+        /* Responsive */
+        @media (max-width: 1200px) {
             .container {
-                grid-template-columns: 1fr;
+                grid-template-columns: 250px 1fr;
             }
             .chat-panel {
                 display: none;
             }
         }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 72px;
+                width: 280px;
+                height: calc(100vh - 72px);
+                z-index: 1000;
+                transition: left 0.3s;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="grid-overlay"></div>
-    
     <div class="container">
         <header class="header">
-            <div class="logo">⚡ Quantum Signal</div>
-            <div style="display: flex; gap: 15px; flex: 1; margin-left: 20px;">
-                <div class="status-indicator">
-                    <div class="status-dot"></div>
-                    <span>LIVE MONITORING</span>
+            <div class="logo">
+                <div class="logo-icon">AI</div>
+                <div>
+                    <div class="logo-text">Quantum Signal<span class="logo-subtext">AI Trading</span></div>
                 </div>
-                <div class="time-display" id="timeDisplay">00:00:00 UTC</div>
+            </div>
+            <div class="status-area">
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    <span>LIVE ANALYSIS</span>
+                </div>
+                <div class="time-display" id="timeDisplay">--:--:-- UTC</div>
             </div>
         </header>
         
-        <main class="main-content">
+        <aside class="sidebar">
             <div class="search-section">
                 <div class="search-box">
-                    <input type="text" id="symbolInput" placeholder="Search symbol..." maxlength="15">
-                    <button class="search-btn" onclick="searchSymbol()">SEARCH</button>
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M11.468 11.468L14 14m-1.333-7.333a6 6 0 11-12 0 6 6 0 0112 0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search symbols...">
+                </div>
+            </div>
+            <div class="symbols-section">
+                <div class="section-title">Market Watch</div>
+                <div class="symbol-list" id="symbolList">
+                    <!-- Symbols will be dynamically added here -->
+                </div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <div class="symbol-header">
+                <div class="current-symbol">
+                    <div class="symbol-main-info">
+                        <div>
+                            <h2 id="currentSymbolName">BTC/USD</h2>
+                            <div class="symbol-badge hold" id="signalBadge">HOLD</div>
+                        </div>
+                    </div>
+                    <div class="price-display">
+                        <div class="current-price" id="currentPrice">$42,850.30</div>
+                        <div class="price-change positive" id="priceChange">+2.45%</div>
+                    </div>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Confidence</div>
+                        <div class="metric-value" id="confidenceValue">78%</div>
+                        <div class="confidence-meter">
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="confidenceFill" style="width: 78%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">RSI (14)</div>
+                        <div class="metric-value" id="rsiValue">58.2</div>
+                        <div class="strength-indicator">
+                            <div class="strength-dot medium"></div>
+                            <span>Neutral</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Volume</div>
+                        <div class="metric-value" id="volumeValue">24.5M</div>
+                        <div class="strength-indicator">
+                            <div class="strength-dot high"></div>
+                            <span>High</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="symbols-grid" id="symbolsGrid"></div>
-            
-            <div class="signals-wrapper" id="signalsContainer"></div>
+            <div class="signal-indicators">
+                <div class="indicator-section">
+                    <div class="indicator-title">Technical Indicators</div>
+                    <div class="indicator-grid">
+                        <div class="indicator-item">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">MACD</div>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">Bullish</div>
+                        </div>
+                        <div class="indicator-item">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Bollinger</div>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--accent);">Upper Band</div>
+                        </div>
+                        <div class="indicator-item">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Stochastic</div>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--warning);">65.4</div>
+                        </div>
+                        <div class="indicator-item">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">ATR</div>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">$412.5</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="indicator-section">
+                    <div class="indicator-title">Trading Plan</div>
+                    <div class="indicator-grid">
+                        <div class="indicator-item">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Entry</div>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">$42,850</div>
+                        </div>
+                        <div class="indicator-item">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Stop Loss</div>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--danger);">$41,200</div>
+                        </div>
+                        <div class="indicator-item">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Take Profit 1</div>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">$44,500</div>
+                        </div>
+                        <div class="indicator-item">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Risk/Reward</div>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--accent);">1:2.4</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
         
         <aside class="chat-panel">
-            <div class="chat-header">AI Signal Assistant</div>
-            <div class="chat-display" id="chatDisplay"></div>
-            <div class="chat-input-box">
-                <input type="text" id="chatInput" placeholder="Ask about signals..." maxlength="100">
-                <button class="chat-send-btn" onclick="sendChat()">SEND</button>
+            <div class="chat-header">
+                <div class="chat-title">AI Trading Assistant</div>
+                <div class="chat-subtitle">Real-time market analysis and strategy guidance</div>
+            </div>
+            <div class="chat-display" id="chatDisplay">
+                <div class="chat-message bot">
+                    <div class="message-header">
+                        <span class="message-sender bot">QUANTUM AI</span>
+                        <span class="message-time">Just now</span>
+                    </div>
+                    <div class="message-content">
+                        Welcome to Quantum Signal AI. I'm here to provide institutional-grade trading analysis. Select any symbol from the sidebar to begin analysis.
+                    </div>
+                </div>
+                <div class="chat-message bot">
+                    <div class="message-header">
+                        <span class="message-sender bot">SYSTEM</span>
+                        <span class="message-time">2 min ago</span>
+                    </div>
+                    <div class="message-content">
+                        Currently analyzing BTC/USD with 78% confidence. Technical indicators show mixed signals with moderate volatility. 
+                        <br><br>
+                        Key levels: Support at $41,200, Resistance at $44,500.
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea class="chat-input" id="chatInput" placeholder="Ask about trading signals, risk analysis, or market insights..." rows="1"></textarea>
+                    <button class="send-button" onclick="sendMessage()">Send</button>
+                </div>
             </div>
         </aside>
     </div>
@@ -513,495 +810,445 @@
         // ===== ADVANCED SIGNAL ENGINE =====
         class AdvancedSignalEngine {
             constructor() {
-                this.symbols = ['BTC/USD', 'ETH/USD', 'SPY', 'AAPL', 'EUR/USD', 'GLD', 'TSLA', 'AMZN', 'XAU/USD', 'OIL/USD', 'EURUSD', 'GBPUSD'];
-                this.priceData = new Map();
-                this.indicatorCache = new Map();
-                this.signals = [];
-                this.selectedSignal = null;
+                this.symbols = this.generateSymbols();
+                this.marketData = new Map();
+                this.currentSymbol = 'BTC/USD';
                 this.chatHistory = [];
-                
-                this.initializePriceData();
-                this.advancedPrompts = this.loadAdvancedPrompts();
+                this.initializeMarketData();
             }
             
-            initializePriceData() {
+            generateSymbols() {
+                return [
+                    { symbol: 'BTC/USD', name: 'Bitcoin', type: 'Crypto', price: 42850.30, change: 2.45 },
+                    { symbol: 'ETH/USD', name: 'Ethereum', type: 'Crypto', price: 3256.80, change: 1.23 },
+                    { symbol: 'SPY', name: 'S&P 500 ETF', type: 'ETF', price: 412.56, change: -0.34 },
+                    { symbol: 'AAPL', name: 'Apple Inc', type: 'Stock', price: 178.65, change: 0.89 },
+                    { symbol: 'EUR/USD', name: 'Euro Dollar', type: 'Forex', price: 1.0856, change: -0.12 },
+                    { symbol: 'XAU/USD', name: 'Gold', type: 'Commodity', price: 1987.40, change: 0.56 },
+                    { symbol: 'TSLA', name: 'Tesla Inc', type: 'Stock', price: 245.30, change: -1.23 },
+                    { symbol: 'NVIDIA', name: 'NVIDIA Corp', type: 'Stock', price: 488.90, change: 3.45 },
+                    { symbol: 'GBP/USD', name: 'British Pound', type: 'Forex', price: 1.2650, change: 0.24 },
+                    { symbol: 'OIL/USD', name: 'Crude Oil', type: 'Commodity', price: 76.45, change: -0.89 },
+                    { symbol: 'AMZN', name: 'Amazon.com', type: 'Stock', price: 142.80, change: 1.12 },
+                    { symbol: 'MSFT', name: 'Microsoft', type: 'Stock', price: 378.45, change: 0.67 }
+                ];
+            }
+            
+            initializeMarketData() {
                 this.symbols.forEach(symbol => {
-                    const basePrice = 30000 + Math.random() * 60000;
-                    this.priceData.set(symbol, {
-                        current: basePrice,
-                        history: Array(100).fill(0).map(() => basePrice + (Math.random() - 0.5) * basePrice * 0.05),
-                        volume: Math.random() * 1000000,
-                        volatility: Math.random() * 50
+                    this.marketData.set(symbol.symbol, {
+                        ...symbol,
+                        indicators: this.generateIndicators(symbol),
+                        timestamp: Date.now()
                     });
                 });
             }
             
-            loadAdvancedPrompts() {
+            generateIndicators(symbol) {
+                const baseVolatility = Math.abs(symbol.change) * 2;
+                const rsi = 50 + (symbol.change * 3);
+                const macd = symbol.change > 0 ? 'BULLISH' : 'BEARISH';
+                const bbPosition = 50 + (symbol.change * 10);
+                
+                // Advanced indicator calculations
+                const sma20 = symbol.price * (1 + (symbol.change / 100) * 0.8);
+                const sma50 = symbol.price * (1 + (symbol.change / 100) * 0.5);
+                const volume = Math.random() * 10000000 + 1000000;
+                const atr = symbol.price * (baseVolatility / 100) * 0.5;
+                const stochastic = 50 + (symbol.change * 5);
+                const adx = 25 + Math.abs(symbol.change) * 5;
+                
                 return {
-                    detail: "Provide comprehensive technical analysis with support/resistance levels, entry/exit strategies, risk assessment, and position sizing recommendations.",
-                    risk: "Analyze market risk factors including volatility clustering, tail risk probability, Value-at-Risk (VaR), and optimal stop-loss placement.",
-                    momentum: "Evaluate momentum indicators including RSI divergences, MACD histogram acceleration, Stochastic crossovers, and volume confirmation patterns.",
-                    trend: "Assess trend strength using moving average confluence, higher-high/lower-low sequences, trendline breaks, and potential reversal signals.",
-                    entry: "Generate precise entry signals with execution price, confirmation indicators, optimal entry window, and alternative entries if primary fails.",
-                    exit: "Define exit strategy with take-profit levels, trailing stop methodology, breakeven rules, and profit protection mechanisms."
+                    rsi: Math.max(0, Math.min(100, rsi)),
+                    macd,
+                    bbPosition: Math.max(0, Math.min(100, bbPosition)),
+                    sma20,
+                    sma50,
+                    volume,
+                    atr,
+                    stochastic: Math.max(0, Math.min(100, stochastic)),
+                    adx: Math.max(0, Math.min(100, adx)),
+                    volatility: baseVolatility,
+                    confidence: this.calculateConfidence(symbol, rsi, macd, bbPosition)
                 };
             }
             
-            // Multi-timeframe RSI Analysis
-            calculateRSI(prices, period = 14) {
-                const changes = [];
-                for (let i = 1; i < prices.length; i++) {
-                    changes.push(prices[i] - prices[i - 1]);
-                }
-                
-                let avgGain = 0, avgLoss = 0;
-                for (let i = 0; i < period; i++) {
-                    if (changes[i] > 0) avgGain += changes[i];
-                    else avgLoss += Math.abs(changes[i]);
-                }
-                avgGain /= period;
-                avgLoss /= period;
-                
-                let rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-                let rsi = 100 - (100 / (1 + rs));
-                
-                return Math.max(0, Math.min(100, rsi));
-            }
-            
-            // MACD with Signal Line
-            calculateMACD(prices, fast = 12, slow = 26, signal = 9) {
-                const emaFast = this.calculateEMA(prices, fast);
-                const emaSlow = this.calculateEMA(prices, slow);
-                const macdLine = emaFast - emaSlow;
-                
-                const macdHistory = [];
-                for (let i = 0; i < prices.length - slow; i++) {
-                    const fast = this.calculateEMA(prices.slice(i, i + fast + 1), fast);
-                    const slow = this.calculateEMA(prices.slice(i, i + slow + 1), slow);
-                    macdHistory.push(fast - slow);
-                }
-                
-                const signalLine = this.calculateEMA(macdHistory, signal);
-                const histogram = macdLine - signalLine;
-                
-                return { macdLine, signalLine, histogram, trend: histogram > 0 ? 'BULLISH' : 'BEARISH' };
-            }
-            
-            calculateEMA(prices, period) {
-                const k = 2 / (period + 1);
-                let ema = prices[0];
-                for (let i = 1; i < Math.min(period * 3, prices.length); i++) {
-                    ema = prices[i] * k + ema * (1 - k);
-                }
-                return ema;
-            }
-            
-            // Bollinger Bands with Standard Deviation
-            calculateBollingerBands(prices, period = 20, stdDev = 2) {
-                const sma = prices.slice(-period).reduce((a, b) => a + b) / period;
-                const variance = prices.slice(-period).reduce((sum, p) => sum + Math.pow(p - sma, 2), 0) / period;
-                const std = Math.sqrt(variance);
-                
-                return {
-                    upper: sma + (std * stdDev),
-                    middle: sma,
-                    lower: sma - (std * stdDev),
-                    bandwidth: (2 * std) / sma * 100,
-                    position: ((prices[prices.length - 1] - (sma - std)) / (2 * std)) * 100
-                };
-            }
-            
-            // Stochastic Oscillator
-            calculateStochastic(prices, period = 14, smooth = 3) {
-                const high = Math.max(...prices.slice(-period));
-                const low = Math.min(...prices.slice(-period));
-                const close = prices[prices.length - 1];
-                
-                let k = high === low ? 50 : ((close - low) / (high - low)) * 100;
-                k = Math.max(0, Math.min(100, k));
-                
-                return { k, d: k, signal: 'NEUTRAL', overbought: k > 80, oversold: k < 20 };
-            }
-            
-            // ATR (Average True Range)
-            calculateATR(prices, period = 14) {
-                let tr = 0;
-                const count = Math.min(period, prices.length - 1);
-                
-                for (let i = Math.max(1, prices.length - period); i < prices.length; i++) {
-                    const high = prices[i];
-                    const low = prices[i - 1];
-                    tr += Math.abs(high - low);
-                }
-                
-                return tr / count;
-            }
-            
-            // Fibonacci Levels
-            calculateFibonacci(prices) {
-                const high = Math.max(...prices);
-                const low = Math.min(...prices);
-                const diff = high - low;
-                
-                return {
-                    r0: high,
-                    r236: high - (diff * 0.236),
-                    r382: high - (diff * 0.382),
-                    r618: high - (diff * 0.618),
-                    r786: high - (diff * 0.786),
-                    s0: low
-                };
-            }
-            
-            // Complex Moving Average Analysis
-            calculateMovingAverages(prices) {
-                const ma8 = this.calculateEMA(prices, 8);
-                const ma20 = this.calculateEMA(prices, 20);
-                const ma50 = this.calculateEMA(prices, 50);
-                const ma200 = this.calculateEMA(prices, Math.min(200, prices.length));
-                
-                return {
-                    ema8: ma8,
-                    ema20: ma20,
-                    ema50: ma50,
-                    ema200: ma200,
-                    alignment: this.checkMAAlignment(ma8, ma20, ma50, ma200)
-                };
-            }
-            
-            checkMAAlignment(ma8, ma20, ma50, ma200) {
-                if (ma8 > ma20 && ma20 > ma50 && ma50 > ma200) return 'STRONG UPTREND';
-                if (ma8 < ma20 && ma20 < ma50 && ma50 < ma200) return 'STRONG DOWNTREND';
-                return 'MIXED';
-            }
-            
-            // Advanced Divergence Detection
-            detectDivergence(prices, rsi) {
-                const recentPrices = prices.slice(-10);
-                const recentRSI = Array(10).fill(0).map((_, i) => this.calculateRSI(prices.slice(0, prices.length - 10 + i)));
-                
-                const priceHigher = recentPrices[9] > recentPrices[0];
-                const rsiLower = recentRSI[9] < recentRSI[0];
-                
-                if (priceHigher && rsiLower) return { type: 'BEARISH', confidence: 'HIGH' };
-                if (!priceHigher && !rsiLower) return { type: 'BULLISH', confidence: 'HIGH' };
-                
-                return { type: 'NONE', confidence: 'LOW' };
-            }
-            
-            // Volume Analysis
-            analyzeVolume(symbol) {
-                const data = this.priceData.get(symbol);
-                return {
-                    current: data.volume,
-                    trend: Math.random() > 0.5 ? 'INCREASING' : 'DECREASING',
-                    strength: Math.random() * 100
-                };
-            }
-            
-            // COMPOSITE SIGNAL GENERATION
-            generateSignal(symbol) {
-                const prices = this.priceData.get(symbol).history;
-                const current = prices[prices.length - 1];
-                
-                // Calculate all indicators
-                const rsi = this.calculateRSI(prices);
-                const macd = this.calculateMACD(prices);
-                const bb = this.calculateBollingerBands(prices);
-                const stoch = this.calculateStochastic(prices);
-                const atr = this.calculateATR(prices);
-                const ma = this.calculateMovingAverages(prices);
-                const fib = this.calculateFibonacci(prices);
-                const divergence = this.detectDivergence(prices, rsi);
-                const volume = this.analyzeVolume(symbol);
-                
-                // Scoring System
-                let buyScore = 0, sellScore = 0, neutralScore = 0;
-                
-                // RSI Analysis
-                if (rsi < 30) { buyScore += 3; }
-                else if (rsi > 70) { sellScore += 3; }
-                else if (rsi < 50 && rsi > 40) { buyScore += 1; }
-                else if (rsi > 50 && rsi < 60) { sellScore += 1; }
-                
-                // MACD Analysis
-                if (macd.histogram > 0 && macd.trend === 'BULLISH') { buyScore += 2.5; }
-                else if (macd.histogram < 0 && macd.trend === 'BEARISH') { sellScore += 2.5; }
-                
-                // Bollinger Bands
-                if (current < bb.lower) { buyScore += 2; }
-                else if (current > bb.upper) { sellScore += 2; }
-                
-                // Stochastic
-                if (stoch.oversold) { buyScore += 1.5; }
-                else if (stoch.overbought) { sellScore += 1.5; }
-                
-                // Moving Average Alignment
-                if (ma.alignment === 'STRONG UPTREND') { buyScore += 3; }
-                else if (ma.alignment === 'STRONG DOWNTREND') { sellScore += 3; }
-                else if (ma.alignment === 'MIXED') { neutralScore += 2; }
-                
-                // Divergence
-                if (divergence.type === 'BEARISH') { sellScore += 1.5; }
-                else if (divergence.type === 'BULLISH') { buyScore += 1.5; }
-                
-                // Determine Signal Type
-                const totalScore = buyScore + sellScore + neutralScore;
-                const buyPercent = buyScore / (totalScore || 1);
-                const sellPercent = sellScore / (totalScore || 1);
-                
-                let type = 'NEUTRAL';
+            calculateConfidence(symbol, rsi, macd, bbPosition) {
                 let confidence = 50;
                 
-                if (buyPercent > 0.55) {
-                    type = 'BUY';
-                    confidence = Math.min(95, 50 + (buyScore * 5));
-                } else if (sellPercent > 0.55) {
-                    type = 'SELL';
-                    confidence = Math.min(95, 50 + (sellScore * 5));
-                } else {
-                    type = 'NEUTRAL';
-                    confidence = 50 + (neutralScore * 3);
+                // RSI contribution
+                if (rsi < 30 || rsi > 70) confidence += 15;
+                else if (rsi < 40 || rsi > 60) confidence += 8;
+                
+                // MACD contribution
+                if (macd === 'BULLISH' && symbol.change > 0) confidence += 10;
+                if (macd === 'BEARISH' && symbol.change < 0) confidence += 10;
+                
+                // Bollinger Bands contribution
+                if (bbPosition < 20 || bbPosition > 80) confidence += 12;
+                else if (bbPosition < 30 || bbPosition > 70) confidence += 6;
+                
+                // Volume contribution (simplified)
+                confidence += Math.abs(symbol.change) * 3;
+                
+                return Math.min(95, Math.max(30, confidence));
+            }
+            
+            getSignal(symbolData) {
+                const indicators = symbolData.indicators;
+                let signal = 'HOLD';
+                
+                if (indicators.confidence > 70) {
+                    if (symbolData.change > 0 && indicators.macd === 'BULLISH') {
+                        signal = 'BUY';
+                    } else if (symbolData.change < 0 && indicators.macd === 'BEARISH') {
+                        signal = 'SELL';
+                    }
+                } else if (indicators.confidence < 40) {
+                    signal = 'HOLD';
                 }
                 
-                // Calculate levels
-                const support = bb.lower;
-                const resistance = bb.upper;
-                const rr = Math.abs((resistance - current) / (current - support)) || 1;
+                return {
+                    signal,
+                    confidence: indicators.confidence,
+                    indicators,
+                    riskReward: this.calculateRiskReward(symbolData, signal),
+                    timeHorizon: this.determineTimeHorizon(indicators)
+                };
+            }
+            
+            calculateRiskReward(symbolData, signal) {
+                const price = symbolData.price;
+                const volatility = symbolData.indicators.volatility;
+                
+                let stopLoss, takeProfit;
+                
+                if (signal === 'BUY') {
+                    stopLoss = price * (1 - volatility / 200);
+                    takeProfit = price * (1 + volatility / 100);
+                } else if (signal === 'SELL') {
+                    stopLoss = price * (1 + volatility / 200);
+                    takeProfit = price * (1 - volatility / 100);
+                } else {
+                    stopLoss = price * 0.97;
+                    takeProfit = price * 1.03;
+                }
+                
+                const risk = Math.abs(price - stopLoss);
+                const reward = Math.abs(takeProfit - price);
+                const ratio = reward / risk;
                 
                 return {
-                    symbol,
-                    type,
-                    confidence: Math.round(confidence),
-                    rsi: Math.round(rsi),
-                    macd: macd.histogram > 0 ? '+' : '-',
-                    macdValue: Math.round(macd.histogram * 1000) / 1000,
-                    price: Math.round(current * 100) / 100,
-                    support: Math.round(support * 100) / 100,
-                    resistance: Math.round(resistance * 100) / 100,
-                    atr: Math.round(atr * 100) / 100,
-                    volatility: Math.round(this.priceData.get(symbol).volatility * 10) / 10,
-                    volume: volume.trend,
-                    rr: Math.round(rr * 10) / 10,
-                    ma: ma,
-                    bb: bb,
-                    timestamp: new Date().toLocaleTimeString('en-US'),
-                    indicators: { rsi, macd, bb, stoch, atr, divergence, volume },
-                    buyScore: Math.round(buyScore * 10) / 10,
-                    sellScore: Math.round(sellScore * 10) / 10
+                    stopLoss: Math.round(stopLoss * 100) / 100,
+                    takeProfit: Math.round(takeProfit * 100) / 100,
+                    ratio: Math.round(ratio * 10) / 10
                 };
+            }
+            
+            determineTimeHorizon(indicators) {
+                if (indicators.volatility > 8) return 'Intraday';
+                if (indicators.volatility > 4) return 'Swing (3-7 days)';
+                return 'Position (1-4 weeks)';
+            }
+            
+            generateAnalysis(symbol) {
+                const data = this.marketData.get(symbol);
+                if (!data) return null;
+                
+                const signal = this.getSignal(data);
+                const indicators = data.indicators;
+                
+                return {
+                    symbol: data.symbol,
+                    name: data.name,
+                    price: data.price,
+                    change: data.change,
+                    signal: signal.signal,
+                    confidence: signal.confidence,
+                    rsi: indicators.rsi,
+                    macd: indicators.macd,
+                    bbPosition: indicators.bbPosition,
+                    volume: indicators.volume,
+                    atr: indicators.atr,
+                    stochastic: indicators.stochastic,
+                    adx: indicators.adx,
+                    volatility: indicators.volatility,
+                    sma20: indicators.sma20,
+                    sma50: indicators.sma50,
+                    riskReward: signal.riskReward,
+                    timeHorizon: signal.timeHorizon,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+            }
+            
+            searchSymbols(query) {
+                const searchTerm = query.toLowerCase();
+                return this.symbols.filter(s => 
+                    s.symbol.toLowerCase().includes(searchTerm) ||
+                    s.name.toLowerCase().includes(searchTerm) ||
+                    s.type.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Advanced AI Analysis
+            generateAIResponse(question, analysis) {
+                const q = question.toLowerCase();
+                
+                if (q.includes('buy') || q.includes('long')) {
+                    return `Based on current analysis of ${analysis.symbol}:\n` +
+                           `- RSI at ${analysis.rsi.toFixed(1)} (${analysis.rsi > 70 ? 'Overbought' : analysis.rsi < 30 ? 'Oversold' : 'Neutral'})\n` +
+                           `- MACD showing ${analysis.macd} momentum\n` +
+                           `- Volatility: ${analysis.volatility.toFixed(1)}%\n` +
+                           `- Recommended entry: $${analysis.price.toFixed(2)}\n` +
+                           `- Stop loss: $${analysis.riskReward.stopLoss}\n` +
+                           `- Take profit: $${analysis.riskReward.takeProfit}\n` +
+                           `- Risk/Reward: 1:${analysis.riskReward.ratio}`;
+                }
+                
+                if (q.includes('sell') || q.includes('short')) {
+                    return `${analysis.symbol} analysis for short position:\n` +
+                           `- Current price: $${analysis.price.toFixed(2)}\n` +
+                           `- Trend: ${analysis.macd}\n` +
+                           `- RSI: ${analysis.rsi.toFixed(1)}\n` +
+                           `- Stochastic: ${analysis.stochastic.toFixed(1)}\n` +
+                           `- Risk management crucial given ${analysis.volatility.toFixed(1)}% volatility`;
+                }
+                
+                if (q.includes('risk') || q.includes('stop')) {
+                    return `Risk assessment for ${analysis.symbol}:\n` +
+                           `- ATR (14): $${analysis.atr.toFixed(2)}\n` +
+                           `- Recommended stop: $${analysis.riskReward.stopLoss}\n` +
+                           `- Position size: 2-3% of capital\n` +
+                           `- Max risk per trade: 1% of account\n` +
+                           `- Volatility adjusted position sizing recommended`;
+                }
+                
+                if (q.includes('technical') || q.includes('indicator')) {
+                    return `Technical indicators for ${analysis.symbol}:\n` +
+                           `- RSI (14): ${analysis.rsi.toFixed(1)} (${analysis.rsi > 70 ? 'Overbought' : analysis.rsi < 30 ? 'Oversold' : 'Neutral'})\n` +
+                           `- MACD: ${analysis.macd}\n` +
+                           `- Bollinger Band Position: ${analysis.bbPosition.toFixed(1)}%\n` +
+                           `- Stochastic: ${analysis.stochastic.toFixed(1)}\n` +
+                           `- ADX: ${analysis.adx.toFixed(1)} (${analysis.adx > 25 ? 'Strong Trend' : 'Weak Trend'})\n` +
+                           `- SMA20: $${analysis.sma20.toFixed(2)}\n` +
+                           `- SMA50: $${analysis.sma50.toFixed(2)}`;
+                }
+                
+                if (q.includes('support') || q.includes('resistance')) {
+                    const support = analysis.price * 0.95;
+                    const resistance = analysis.price * 1.05;
+                    return `Key levels for ${analysis.symbol}:\n` +
+                           `- Current: $${analysis.price.toFixed(2)}\n` +
+                           `- Immediate support: $${support.toFixed(2)}\n` +
+                           `- Strong support: $${(analysis.price * 0.92).toFixed(2)}\n` +
+                           `- Immediate resistance: $${resistance.toFixed(2)}\n` +
+                           `- Strong resistance: $${(analysis.price * 1.08).toFixed(2)}`;
+                }
+                
+                // Default response
+                return `Analysis for ${analysis.symbol} (${analysis.name}):\n` +
+                       `Current signal: ${analysis.signal} with ${analysis.confidence.toFixed(0)}% confidence\n` +
+                       `Price: $${analysis.price.toFixed(2)} (${analysis.change > 0 ? '+' : ''}${analysis.change.toFixed(2)}%)\n` +
+                       `Time horizon: ${analysis.timeHorizon}\n` +
+                       `Ask about: buy/sell signals, risk management, technical indicators, or support/resistance levels.`;
             }
         }
         
-        // ===== APPLICATION =====
+        // ===== APPLICATION INSTANCE =====
         const engine = new AdvancedSignalEngine();
-        let currentSymbol = 'BTC/USD';
+        let currentAnalysis = null;
         
+        // ===== UI FUNCTIONS =====
         function initializeUI() {
-            displaySymbols();
-            updateSignals();
+            updateSymbolList();
+            updateCurrentSymbol();
             updateClock();
-            setInterval(updateClock, 1000);
-            setInterval(updateSignals, 1000);
+            initializeChat();
             
-            addChatMessage('bot', '⚡ Quantum Signal AI online. Select a symbol or ask me anything about the signals.');
+            // Set up intervals
+            setInterval(updateClock, 1000);
+            setInterval(updateMarketData, 3000);
+            setInterval(updateCurrentSymbol, 5000);
+            
+            // Event listeners
+            setupEventListeners();
         }
         
-        function displaySymbols() {
-            const grid = document.getElementById('symbolsGrid');
-            grid.innerHTML = engine.symbols.map(s => 
-                `<div class="symbol-chip ${s === currentSymbol ? 'active' : ''}" onclick="selectSymbol('${s}')">${s}</div>`
-            ).join('');
+        function setupEventListeners() {
+            // Search input
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value;
+                if (query.length > 1) {
+                    searchSymbols(query);
+                } else {
+                    updateSymbolList();
+                }
+            });
+            
+            // Chat input
+            const chatInput = document.getElementById('chatInput');
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Auto-resize textarea
+            chatInput.addEventListener('input', () => {
+                chatInput.style.height = 'auto';
+                chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+            });
+        }
+        
+        function updateSymbolList(filteredSymbols = null) {
+            const symbolList = document.getElementById('symbolList');
+            const symbols = filteredSymbols || engine.symbols;
+            
+            symbolList.innerHTML = symbols.map(symbol => {
+                const isActive = symbol.symbol === engine.currentSymbol;
+                const changeClass = symbol.change >= 0 ? 'positive' : 'negative';
+                
+                return `
+                    <div class="symbol-item ${isActive ? 'active' : ''}" 
+                         onclick="selectSymbol('${symbol.symbol}')">
+                        <div class="symbol-info">
+                            <div class="symbol-name">${symbol.symbol}</div>
+                            <div class="symbol-desc">${symbol.name} • ${symbol.type}</div>
+                        </div>
+                        <div class="symbol-price">
+                            $${symbol.price.toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function searchSymbols(query) {
+            const results = engine.searchSymbols(query);
+            updateSymbolList(results);
         }
         
         function selectSymbol(symbol) {
-            currentSymbol = symbol;
-            displaySymbols();
-            updateSignals();
+            engine.currentSymbol = symbol;
+            updateCurrentSymbol();
+            updateSymbolList();
         }
         
-        function searchSymbol() {
-            const input = document.getElementById('symbolInput');
-            const search = input.value.toUpperCase().trim();
+        function updateCurrentSymbol() {
+            const analysis = engine.generateAnalysis(engine.currentSymbol);
+            if (!analysis) return;
             
-            if (search && engine.symbols.includes(search)) {
-                selectSymbol(search);
-                input.value = '';
-            }
+            currentAnalysis = analysis;
+            
+            // Update header
+            document.getElementById('currentSymbolName').textContent = analysis.symbol;
+            document.getElementById('currentPrice').textContent = `$${analysis.price.toFixed(2)}`;
+            
+            const changeElement = document.getElementById('priceChange');
+            changeElement.textContent = `${analysis.change >= 0 ? '+' : ''}${analysis.change.toFixed(2)}%`;
+            changeElement.className = `price-change ${analysis.change >= 0 ? 'positive' : 'negative'}`;
+            
+            // Update badge
+            const badge = document.getElementById('signalBadge');
+            badge.textContent = analysis.signal;
+            badge.className = `symbol-badge ${analysis.signal.toLowerCase()}`;
+            
+            // Update metrics
+            document.getElementById('confidenceValue').textContent = `${analysis.confidence.toFixed(0)}%`;
+            document.getElementById('confidenceFill').style.width = `${analysis.confidence}%`;
+            
+            document.getElementById('rsiValue').textContent = analysis.rsi.toFixed(1);
+            document.getElementById('volumeValue').textContent = `${(analysis.volume / 1000000).toFixed(1)}M`;
+            
+            // Add chat message
+            addChatMessage('bot', `Now analyzing ${analysis.symbol}. Signal: ${analysis.signal} with ${analysis.confidence.toFixed(0)}% confidence.`);
         }
         
-        function updateSignals() {
-            const container = document.getElementById('signalsContainer');
+        function updateMarketData() {
+            // Simulate real-time market updates
+            engine.symbols.forEach(symbol => {
+                const change = (Math.random() - 0.5) * 2;
+                symbol.price = symbol.price * (1 + change / 100);
+                symbol.change = change;
+            });
             
-            engine.signals = [];
-            const primary = engine.generateSignal(currentSymbol);
-            engine.signals.push(primary);
+            engine.initializeMarketData();
             
-            // Add secondary symbols
-            engine.symbols
-                .filter(s => s !== currentSymbol)
-                .slice(0, 5)
-                .forEach(symbol => {
-                    engine.signals.push(engine.generateSignal(symbol));
-                });
-            
-            container.innerHTML = engine.signals.map((signal, idx) => `
-                <div class="signal-card ${signal.type.toLowerCase()}" onclick="selectSignal(${idx})">
-                    <div class="signal-header">
-                        <span class="signal-symbol">${signal.symbol}</span>
-                        <span class="signal-badge ${signal.type.toLowerCase()}">${signal.type}</span>
-                    </div>
-                    <div class="signal-metrics">
-                        <div class="metric">
-                            <div class="metric-label">CONFIDENCE</div>
-                            <div class="metric-value">${signal.confidence}%</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">PRICE</div>
-                            <div class="metric-value">$${signal.price}</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">RSI</div>
-                            <div class="metric-value">${signal.rsi}</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">VOL</div>
-                            <div class="metric-value">${signal.volatility}%</div>
-                        </div>
-                    </div>
-                    <div class="strength-meter">
-                        <div class="strength-fill" style="width: ${signal.confidence}%"></div>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function selectSignal(idx) {
-            engine.selectedSignal = engine.signals[idx];
-            const signal = engine.selectedSignal;
-            
-            let message = `═══ ${signal.symbol} SIGNAL ANALYSIS ═══\n`;
-            message += `Type: ${signal.type} (${signal.confidence}% confidence)\n`;
-            message += `Price: $${signal.price} | RSI: ${signal.rsi}\n`;
-            message += `Support: $${signal.support} | Resistance: $${signal.resistance}\n`;
-            message += `Risk/Reward: 1:${signal.rr} | ATR: ${signal.atr}\n`;
-            message += `MACD: ${signal.macd} (${signal.macdValue})\n`;
-            message += `Volume Trend: ${signal.volume}`;
-            
-            addChatMessage('bot', message);
-        }
-        
-        function addChatMessage(sender, text) {
-            const display = document.getElementById('chatDisplay');
-            const msg = document.createElement('div');
-            msg.className = `chat-msg ${sender}`;
-            msg.textContent = text;
-            display.appendChild(msg);
-            display.scrollTop = display.scrollHeight;
-        }
-        
-        function sendChat() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            
-            if (!text) return;
-            
-            addChatMessage('user', text);
-            input.value = '';
-            
-            setTimeout(() => {
-                const response = generateAIResponse(text);
-                addChatMessage('bot', response);
-            }, 200);
-        }
-        
-        function generateAIResponse(query) {
-            if (!engine.selectedSignal) {
-                return 'Please select a signal first by clicking on any signal card.';
+            if (engine.currentSymbol) {
+                updateCurrentSymbol();
             }
-            
-            const s = engine.selectedSignal;
-            const q = query.toLowerCase();
-            
-            if (q.includes('detail') || q.includes('full') || q.includes('comprehensive')) {
-                return `DETAILED ANALYSIS: ${s.symbol}\n` +
-                       `Signal: ${s.type} | Confidence: ${s.confidence}%\n` +
-                       `Buy Score: ${s.buyScore}/10 | Sell Score: ${s.sellScore}/10\n` +
-                       `RSI: ${s.rsi} (Overbought: >70, Oversold: <30)\n` +
-                       `MACD: ${s.macd === '+' ? 'Positive Momentum' : 'Negative Momentum'}\n` +
-                       `Price Level: $${s.price}\n` +
-                       `Support Cluster: $${s.support}\n` +
-                       `Resistance Cluster: $${s.resistance}\n` +
-                       `Entry Strategy: ${s.type === 'BUY' ? 'Accumulate on dips to support' : 'Sell rallies to resistance'}\n` +
-                       `Stop Loss: ${s.type === 'BUY' ? '$' + Math.round((s.support - s.atr) * 100) / 100 : '$' + Math.round((s.resistance + s.atr) * 100) / 100}`;
-            }
-            
-            if (q.includes('risk') || q.includes('stop') || q.includes('sl')) {
-                const sl = s.type === 'BUY' ? Math.round((s.support - s.atr) * 100) / 100 : Math.round((s.resistance + s.atr) * 100) / 100;
-                const tp = s.type === 'BUY' ? Math.round((s.resistance + s.atr) * 100) / 100 : Math.round((s.support - s.atr) * 100) / 100;
-                
-                return `RISK MANAGEMENT: ${s.symbol}\n` +
-                       `Entry: $${s.price}\n` +
-                       `Stop Loss: $${sl}\n` +
-                       `Take Profit: $${tp}\n` +
-                       `Risk/Reward: 1:${s.rr}\n` +
-                       `Position Size: Calculate based on account risk (2-3% max per trade)\n` +
-                       `Max Loss: Risk amount × Account Size\n` +
-                       `Profit Target: Risk × ${s.rr}`;
-            }
-            
-            if (q.includes('entry') || q.includes('when') || q.includes('now')) {
-                return `ENTRY SIGNAL: ${s.symbol}\n` +
-                       `Recommendation: ${s.type === 'BUY' ? '✓ LONG' : '✗ SHORT'}\n` +
-                       `Current Price: $${s.price}\n` +
-                       `Best Entry: ${s.type === 'BUY' ? `On pullback to $${s.support}` : `On rally to $${s.resistance}`}\n` +
-                       `Confirmation: Wait for volume surge\n` +
-                       `Timeframe: Day or 4H chart for swing trades\n` +
-                       `Alternative Entry: Market order if ${s.type === 'BUY' ? 'price breaks above resistance' : 'price breaks below support'}`;
-            }
-            
-            if (q.includes('technical') || q.includes('indicator')) {
-                return `TECHNICAL INDICATORS: ${s.symbol}\n` +
-                       `RSI(14): ${s.rsi} - ${s.rsi > 70 ? 'OVERBOUGHT' : s.rsi < 30 ? 'OVERSOLD' : 'NEUTRAL'}\n` +
-                       `MACD: ${s.macd === '+' ? 'Bullish Crossover' : 'Bearish Crossover'}\n` +
-                       `BB Position: ${Math.round(s.bb.position)}% (0=lower, 100=upper)\n` +
-                       `ATR(14): ${s.atr} - Volatility Measure\n` +
-                       `MA Trend: ${s.ma.alignment}\n` +
-                       `Volume: ${s.volume} with trend strength`;
-            }
-            
-            if (q.includes('support') || q.includes('resistance') || q.includes('level')) {
-                return `PRICE LEVELS: ${s.symbol}\n` +
-                       `Current: $${s.price}\n` +
-                       `Major Support: $${s.support}\n` +
-                       `Major Resistance: $${s.resistance}\n` +
-                       `Range Width: $${Math.round((s.resistance - s.support) * 100) / 100}\n` +
-                       `Breakout Target (Long): $${Math.round((s.resistance + (s.resistance - s.support)) * 100) / 100}\n` +
-                       `Breakdown Target (Short): $${Math.round((s.support - (s.resistance - s.support)) * 100) / 100}`;
-            }
-            
-            return `QUICK ANALYSIS: ${s.symbol}\n${s.type} Signal at ${s.confidence}% confidence.\n` +
-                   `Price $${s.price} between $${s.support}-$${s.resistance}.\n` +
-                   `RSI: ${s.rsi} | MACD: ${s.macd}\n` +
-                   `Ask: detail | risk | entry | technical | support`;
         }
         
         function updateClock() {
             const now = new Date();
-            const utc = now.toLocaleTimeString('en-US', { timeZone: 'UTC' });
-            document.getElementById('timeDisplay').textContent = utc;
+            const utc = now.toISOString().substr(11, 8);
+            document.getElementById('timeDisplay').textContent = `${utc} UTC`;
         }
         
-        // Keyboard handlers
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                if (document.activeElement.id === 'chatInput') sendChat();
-                if (document.activeElement.id === 'symbolInput') searchSymbol();
-            }
-        });
+        // ===== CHAT FUNCTIONS =====
+        function initializeChat() {
+            // Welcome message
+            setTimeout(() => {
+                addChatMessage('bot', 'I can analyze any symbol, provide technical insights, risk assessments, and trading strategies. Ask me anything!');
+            }, 1000);
+        }
         
-        // Initialize
-        window.addEventListener('load', initializeUI);
+        function addChatMessage(sender, text) {
+            const chatDisplay = document.getElementById('chatDisplay');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="message-sender ${sender}">${sender === 'bot' ? 'QUANTUM AI' : 'YOU'}</span>
+                    <span class="message-time">${timeString}</span>
+                </div>
+                <div class="message-content">${text.replace(/\n/g, '<br>')}</div>
+            `;
+            
+            chatDisplay.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            
+            // Limit history
+            const messages = chatDisplay.querySelectorAll('.chat-message');
+            if (messages.length > 50) {
+                messages[0].remove();
+            }
+        }
+        
+        function sendMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addChatMessage('user', message);
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            
+            // Generate AI response
+            setTimeout(() => {
+                if (!currentAnalysis) {
+                    addChatMessage('bot', 'Please select a symbol first to get specific analysis.');
+                    return;
+                }
+                
+                const response = engine.generateAIResponse(message, currentAnalysis);
+                addChatMessage('bot', response);
+            }, 500);
+        }
+        
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', initializeUI);
     </script>
 </body>
 </html>
