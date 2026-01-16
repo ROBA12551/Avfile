@@ -1126,16 +1126,21 @@
                 if (stochastic > 70) stochasticStatus = 'Overbought';
                 if (stochastic < 30) stochasticStatus = 'Oversold';
                 
+                let histogram = 'Zero';
+                if (macdStatus === 'Bullish') histogram = 'Positive';
+                if (macdStatus === 'Bearish') histogram = 'Negative';
+
                 // ATR calculation
                 const atr = symbol.price * (baseVol / 100) * 0.5;
                 
                 return {
                     rsi: Math.max(20, Math.min(80, rsi)),
-                    macd: {
-                        status: macdStatus,
-                        strength: macdStrength,
-                        histogram: macdBias > 0.5 ? 'Positive' : 'Negative'
-                    },
+macd: {
+  status: macdStatus,
+  strength: macdStrength,
+  histogram
+},
+
                     bollinger: {
                         position: bbPosition,
                         description: bbPositionDesc,
@@ -1217,12 +1222,15 @@
                 });
                 
                 // 6. Risk/Reward ≥ 1:2
-                const riskReward = this.calculateRiskReward(data, 'BUY');
-                const rrValid = riskReward.ratio >= 2;
+const rrBuy = this.calculateRiskReward(data, 'BUY');
+const rrSell = this.calculateRiskReward(data, 'SELL');
+const rrBest = Math.max(rrBuy.ratio, rrSell.ratio);
+const rrWorst = Math.min(rrBuy.ratio, rrSell.ratio);
+                const rrValid = rrBest >= 2;
                 conditions.buyConditions.push({
                     name: 'Risk/Reward ≥ 1:2',
                     value: rrValid,
-                    description: `Current RR: 1:${riskReward.ratio.toFixed(1)}`
+                    description: `Current RR: 1:${rrBest.toFixed(1)}`
                 });
                 
                 // ===== SELL CONDITIONS (ALL REQUIRED) =====
@@ -1284,14 +1292,18 @@
                     indicators.bollinger.position > 70 && indicators.bollinger.breakout === 'No Breakout',
                     indicators.volume.status === 'High' && indicators.volume.trend === 'Contracting',
                     indicators.macd.status === 'Neutral',
-                    riskReward.ratio < 2
+                    rrBest < 2
                 ];
 const shouldHold = holdConditions.filter(Boolean).length >= 2;
 const buyScore = conditions.buyConditions.filter(c => c.value).length;
 const sellScore = conditions.sellConditions.filter(c => c.value).length;
 const allBuyValid = buyScore === conditions.buyConditions.length;
 const allSellValid = sellScore === conditions.sellConditions.length;
-           
+const riskReward =
+  signal === 'BUY' ? rrBuy :
+  signal === 'SELL' ? rrSell :
+  (rrBuy.ratio >= rrSell.ratio ? rrBuy : rrSell); // HOLDは良い方を表示
+      
                 // Determine signal
                 if (shouldHold) {
                     signal = 'HOLD';
@@ -1491,11 +1503,15 @@ let lastAlertSignal = {};
 function triggerAlertIfNeeded(analysis) {
     const alertToggle = document.getElementById('alertToggle');
     const alertEnabled = alertToggle && alertToggle.checked;
+    const THRESHOLDS = { VALID: 65, ALERT: 65, MIN_RR: 2.0 };
+
+
     if (!alertEnabled) return;
 
     if (
         (analysis.signal === 'BUY' || analysis.signal === 'SELL') &&
-        analysis.confidence >= 70
+        analysis.confidence >= THRESHOLDS.ALERT
+
     ) {
         const prev = lastAlertSignal[analysis.symbol];
         if (prev === analysis.signal) return;
