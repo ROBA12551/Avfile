@@ -1,26 +1,4 @@
-/**
- * netlify/functions/github-upload.js
- * 
- * GitHub Releases へのアップロードを管理する Netlify Function
- * 
- * リクエスト:
- * POST /api/github-upload
- * {
- *   action: "create-release" | "upload-asset" | "get-info",
- *   releaseTag: "video_abc123",
- *   fileName: "video_abc123.mp4",
- *   metadata: {...},
- *   contentType: "application/octet-stream",
- *   body: base64-encoded-file | null
- * }
- * 
- * レスポンス:
- * {
- *   success: true,
- *   data: {...},
- *   error?: "エラーメッセージ"
- * }
- */
+
 
 const https = require('https');
 const url = require('url');
