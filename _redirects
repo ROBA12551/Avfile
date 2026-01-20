@@ -1,12 +1,7 @@
-# Root with query parameters
-/?id=:id  /view.html?id=:id  200
-
-# Specific routes
+# Specific pages
 /policy  /policy.html  200
 /upload  /upload.html  200
+/debug   /debug.html   200
 
-# Path-based routes
-/v/*  /view.html  200
-
-# Catch-all for SPA
+# Everything else - use index.html (which is now the viewer)
 /*  /index.html  200

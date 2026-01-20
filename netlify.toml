@@ -16,18 +16,11 @@
   GITHUB_REPO = "Avfile"
   DISCORD_WEBHOOK_URL = ""
 
-# Redirects for single-page app - ORDER MATTERS
-# Root with query parameters to view.html
+# Redirects for single-page app - ORDER MATTERS (most specific first)
+# Specific routes
 [[redirects]]
-  from = "/?id=:id"
-  to = "/view.html?id=:id"
-  status = 200
-  force = false
-
-# /v/* to view.html
-[[redirects]]
-  from = "/v/*"
-  to = "/view.html"
+  from = "/policy"
+  to = "/policy.html"
   status = 200
 
 [[redirects]]
@@ -36,20 +29,21 @@
   status = 200
 
 [[redirects]]
-  from = "/policy"
-  to = "/policy.html"
+  from = "/debug"
+  to = "/debug.html"
   status = 200
 
-# API routes
+# Path-based routes
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from = "/v/*"
+  to = "/view.html"
   status = 200
 
-# Catch-all for SPA
+# Catch-all: send all other requests to view.html
+# This includes root and root with query params like /?id=xxx
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/view.html"
   status = 200
 
 # Security headers

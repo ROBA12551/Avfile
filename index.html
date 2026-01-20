@@ -1,202 +1,467 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Avfile - Upload & Share Instantly</title>
-    <link rel="stylesheet" href="css/index.css" />
-  </head>
-  <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-      <div class="navbar-container">
-        <div class="navbar-logo">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-          </svg>
-          <span class="logo-text">Avfile</span>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avfile - File Viewer</title>
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        .viewer-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a2e;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viewer-header {
+            background: #0f0f1e;
+            padding: 1rem;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .viewer-header a {
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .viewer-content {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .viewer-content video,
+        .viewer-content img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .viewer-controls {
+            background: #0f0f1e;
+            padding: 1rem;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-viewer {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-viewer:hover {
+            background: #764ba2;
+        }
+
+        .error-box {
+            background: #ff6b6b;
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 2rem;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            color: #fff;
+        }
+
+        .spinner {
+            border: 4px solid #333;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="viewer-wrapper" id="viewerWrapper">
+        <div class="viewer-header">
+            <a href="/" style="color: #FFD700; text-decoration: none; font-weight: bold; font-size: 1.2rem;">← Avfile</a>
+            <h2 id="fileName" style="color: white; margin: 0; flex: 1; text-align: center;">File Viewer</h2>
+            <div style="width: 150px;"></div>
         </div>
 
-        <div class="navbar-menu">
-          <a href="#" class="nav-link">Home</a>
-          <a href="policy.html" class="nav-link">Terms</a>
-        </div>
-
-
-      </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-      <!-- Upload Section (shown by default) -->
-      <section class="hero">
-        <div class="hero-container">
-          <div class="hero-text">
-            <h1 class="hero-title">Upload & Share In Seconds</h1>
-            <p class="hero-description">
-              No login required. No limits. Upload your video instantly and get a shareable link in seconds.
-            </p>
-          </div>
-
-          <div class="hero-illustration">
-            <div class="illustration-folder">
-              <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-                <rect x="30" y="40" width="140" height="80" rx="8" fill="#FFD700" />
-                <rect x="30" y="30" width="50" height="15" rx="3" fill="#FFD700" />
-                <ellipse cx="100" cy="60" rx="35" ry="25" fill="#FFEB3B" opacity="0.5" />
-                <g transform="translate(55, 65)">
-                  <rect width="20" height="25" rx="2" fill="white" />
-                  <line x1="0" y1="8" x2="20" y2="8" stroke="#ddd" stroke-width="1" />
-                  <line x1="0" y1="13" x2="20" y2="13" stroke="#ddd" stroke-width="1" />
-                </g>
-                <g transform="translate(85, 65)">
-                  <rect width="20" height="25" rx="2" fill="white" />
-                  <line x1="0" y1="8" x2="20" y2="8" stroke="#ddd" stroke-width="1" />
-                  <line x1="0" y1="13" x2="20" y2="13" stroke="#ddd" stroke-width="1" />
-                </g>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Upload Area -->
-      <section class="upload-section">
-        <div class="upload-container">
-          <div class="upload-area" id="uploadArea">
-            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="16 16 12 12 8 16"></polyline>
-              <line x1="12" y1="12" x2="12" y2="21"></line>
-              <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path>
-            </svg>
-            <h2 class="upload-title">Drop Files or Click to Upload</h2>
-            <p class="upload-subtitle">Fast upload • Unlimited downloads • No expiry • All file types</p>
-            <input type="file" id="fileInput" accept="*/*" multiple style="display: none" />
-            <button class="btn-upload" id="uploadBtn">Select File</button>
-            <p class="upload-info">Max 100MB • All file types supported</p>
-          </div>
-
-          <!-- Processing State -->
-          <div class="processing-area" id="processingArea" style="display: none">
-            <div class="spinner"></div>
-            <h3 id="processingTitle">Uploading...</h3>
-            <p id="processingMessage" class="processing-message">Preparing file...</p>
-            <div class="progress-container">
-              <div class="progress-bar">
-                <div id="progressFill" class="progress-fill"></div>
-              </div>
-              <p id="progressText" class="progress-text">0%</p>
-            </div>
-          </div>
-
-          <!-- Success Screen -->
-          <div class="success-area" id="successArea" style="display: none">
-            <div class="success-icon">✓</div>
-            <h2>Upload Complete!</h2>
-            <div class="success-content">
-              <div class="share-section">
-                <label>Download Link:</label>
-                <div class="url-container">
-                  <input id="shareUrl" type="text" readonly class="url-input" />
-                  <button class="btn-copy" id="copyUrlBtn">Copy</button>
+        <div class="viewer-content" id="viewerContent">
+            <!-- Upload Area when no ID -->
+            <div id="uploadUI" style="display: none; width: 100%; max-width: 800px; margin: auto;">
+                <div style="text-align: center; color: white; padding: 2rem;">
+                    <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">📁 Avfile</h1>
+                    <p style="font-size: 1.2rem; margin-bottom: 2rem;">Upload & Share Files Instantly</p>
+                    
+                    <div id="uploadArea" style="
+                        border: 3px dashed #667eea;
+                        border-radius: 8px;
+                        padding: 3rem;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    "
+                    onmouseover="this.style.borderColor='#764ba2'; this.style.background='rgba(102, 126, 234, 0.1)'"
+                    onmouseout="this.style.borderColor='#667eea'; this.style.background='transparent'"
+                    >
+                        <svg style="width: 60px; height: 60px; margin: 0 auto 1rem; color: #FFD700;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 16 12 12 8 16"></polyline>
+                            <line x1="12" y1="12" x2="12" y2="21"></line>
+                            <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path>
+                        </svg>
+                        <h2>Drop Files or Click to Upload</h2>
+                        <p style="color: #ccc;">Max 100MB • All file types supported</p>
+                        <input type="file" id="fileInput" accept="*/*" style="display: none" />
+                        <button id="selectFileBtn" style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 1rem;">Select File</button>
+                    </div>
                 </div>
-              </div>
-
-              <div class="share-buttons">
-                <button class="share-btn twitter" id="shareTwitter">Twitter</button>
-                <button class="share-btn line" id="shareLINE">LINE</button>
-              </div>
-
-              <div class="success-stats">
-                <p>📊 <span id="totalUploads">0</span> files uploaded</p>
-                <p>💾 <span id="totalStorage">0</span> MB total storage</p>
-              </div>
             </div>
 
-            <div class="success-actions">
-              <button class="btn btn-primary" id="uploadMoreBtn">Upload Another</button>
+            <!-- Loading when checking file -->
+            <div id="loadingUI" style="display: none; text-align: center; color: white;">
+                <div style="border: 4px solid #333; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 2rem auto;"></div>
+                <p>Loading file...</p>
             </div>
-          </div>
 
-          <!-- Error Display -->
-          <div class="error-area" id="errorArea" style="display: none">
-            <div class="error-icon">✕</div>
-            <h2>Upload Failed</h2>
-            <p id="errorMessage" class="error-message"></p>
-            <button class="btn-retry" id="retryBtn">Try Again</button>
-          </div>
+            <!-- Viewer when file found -->
+            <div id="fileViewerUI" style="display: none;"></div>
+
+            <!-- Error when file not found -->
+            <div id="errorUI" style="display: none; text-align: center; color: white;">
+                <h2>❌ File Not Found</h2>
+                <p id="errorMessage" style="color: #ccc;">The file you're looking for doesn't exist.</p>
+                <a href="/" style="color: #FFD700; text-decoration: underline; display: inline-block; margin-top: 1rem;">Back to Home</a>
+            </div>
         </div>
-      </section>
 
-      <!-- Features Section -->
-      <section class="features">
-        <div class="features-container">
-          <div class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <h3>Lightning Fast</h3>
-            <p>Upload and get your link in seconds.</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">🔒</div>
-            <h3>100% Secure</h3>
-            <p>Industry-standard encryption for all files.</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">📱</div>
-            <h3>Works Everywhere</h3>
-            <p>Upload from any device.</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">🎯</div>
-            <h3>No Login</h3>
-            <p>Start sharing instantly.</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">∞</div>
-            <h3>Unlimited</h3>
-            <p>Unlimited downloads, files never expire.</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">⭐</div>
-            <h3>Simple & Fast</h3>
-            <p>No complicated setup needed.</p>
-          </div>
+        <div class="viewer-controls" id="viewerControls" style="background: #0f0f1e; padding: 1rem; border-top: 1px solid #333; display: none; gap: 1rem; justify-content: center;">
+            <button class="btn-viewer" id="downloadBtn">📥 Download</button>
+            <button class="btn-viewer" id="shareBtn">🔗 Copy Link</button>
         </div>
-      </section>
+    </div>
 
-      <!-- Upload History Section -->
-      <section class="upload-history-section">
-        <div class="upload-history-container">
-          <h2>📋 Upload History</h2>
-          <div id="uploadHistory" class="upload-history-list">
-            <p class="no-uploads">No uploads yet. Upload a file to see history.</p>
-          </div>
-        </div>
-      </section>
-    </main>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-links">
-          <a href="#">Home</a>
-          <a href="policy.html">Terms</a>
-          <a href="policy.html#privacy">Privacy</a>
-        </div>
-        <p class="footer-text">Avfile © 2025 | Fast File Sharing</p>
-      </div>
-    </footer>
+        .viewer-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a2e;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
 
-    <!-- Scripts -->
+        .viewer-header {
+            background: #0f0f1e;
+            padding: 1rem;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .viewer-content {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .viewer-content video,
+        .viewer-content img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .viewer-controls {
+            background: #0f0f1e;
+            padding: 1rem;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-viewer {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-viewer:hover {
+            background: #764ba2;
+        }
+    </style>
+
     <script src="js/storage.js"></script>
-    <script src="js/compress.js"></script>
-    <script src="js/github-api-netlify.js"></script>
-    <script src="js/viewer.js"></script>
-    <script src="js/index.js"></script>
-  </body>
+    <script src="js/simple-upload.js"></script>
+    <script>
+        // Initialize app
+        const urlParams = new URLSearchParams(window.location.search);
+        const fileId = urlParams.get('id');
+
+        console.log('Avfile loaded');
+        console.log('File ID:', fileId);
+
+        let currentFile = null;
+
+        async function initApp() {
+            try {
+                if (!fileId) {
+                    // Mode: Upload/Home
+                    console.log('Mode: Home/Upload');
+                    showUploadUI();
+                    setupUploadHandlers();
+                } else {
+                    // Mode: Viewer
+                    console.log('Mode: Viewer');
+                    showLoadingUI();
+                    await loadAndDisplayFile();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorUI(error.message);
+            }
+        }
+
+        function showUploadUI() {
+            document.getElementById('uploadUI').style.display = 'block';
+            document.getElementById('loadingUI').style.display = 'none';
+            document.getElementById('fileViewerUI').style.display = 'none';
+            document.getElementById('errorUI').style.display = 'none';
+            document.getElementById('viewerControls').style.display = 'none';
+        }
+
+        function showLoadingUI() {
+            document.getElementById('uploadUI').style.display = 'none';
+            document.getElementById('loadingUI').style.display = 'block';
+            document.getElementById('fileViewerUI').style.display = 'none';
+            document.getElementById('errorUI').style.display = 'none';
+            document.getElementById('viewerControls').style.display = 'none';
+        }
+
+        function showFileViewerUI() {
+            document.getElementById('uploadUI').style.display = 'none';
+            document.getElementById('loadingUI').style.display = 'none';
+            document.getElementById('fileViewerUI').style.display = 'block';
+            document.getElementById('errorUI').style.display = 'none';
+            document.getElementById('viewerControls').style.display = 'flex';
+        }
+
+        function showErrorUI(message) {
+            document.getElementById('uploadUI').style.display = 'none';
+            document.getElementById('loadingUI').style.display = 'none';
+            document.getElementById('fileViewerUI').style.display = 'none';
+            document.getElementById('errorUI').style.display = 'block';
+            document.getElementById('viewerControls').style.display = 'none';
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        async function loadAndDisplayFile() {
+            try {
+                // Get file from localStorage
+                const uploadManager = new SimpleUploadManager();
+                const fileData = uploadManager.getFileData(fileId);
+
+                console.log('File data:', fileData);
+
+                if (!fileData) {
+                    showErrorUI(`File not found: ${fileId}`);
+                    return;
+                }
+
+                currentFile = fileData;
+
+                // Display file info
+                document.getElementById('fileName').textContent = fileData.name || 'File';
+
+                // Display file content
+                const isVideo = fileData.type?.startsWith('video/');
+                const isImage = fileData.type?.startsWith('image/');
+                const fileViewerUI = document.getElementById('fileViewerUI');
+
+                if (isVideo && fileData.data) {
+                    const base64 = fileData.data;
+                    fileViewerUI.innerHTML = `<video controls style="max-width: 90%; max-height: 90%;">
+                        <source src="data:${fileData.type};base64,${base64}" type="${fileData.type}" />
+                        Your browser does not support the video tag.
+                    </video>`;
+                } else if (isImage && fileData.data) {
+                    const base64 = fileData.data;
+                    fileViewerUI.innerHTML = `<img src="data:${fileData.type};base64,${base64}" alt="${escapeHtml(fileData.name)}" style="max-width: 90%; max-height: 90%;" />`;
+                } else if (fileData.data) {
+                    const sizeMB = ((fileData.size || 0) / 1024 / 1024).toFixed(1);
+                    fileViewerUI.innerHTML = `<div style="color: white; text-align: center;">
+                        <h3>${escapeHtml(fileData.name || 'File')}</h3>
+                        <p>Size: ${sizeMB} MB</p>
+                        <p>Type: ${fileData.type || 'Unknown'}</p>
+                        <button id="downloadBtnLarge" style="background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 2rem;">📥 Download File</button>
+                    </div>`;
+                    document.getElementById('downloadBtnLarge')?.addEventListener('click', () => downloadFile(fileData));
+                } else {
+                    showErrorUI('File data is corrupted or missing');
+                    return;
+                }
+
+                // Setup buttons
+                setupViewerButtons(fileData);
+
+                // Show viewer
+                showFileViewerUI();
+
+            } catch (error) {
+                console.error('Error loading file:', error);
+                showErrorUI(error.message);
+            }
+        }
+
+        function setupUploadHandlers() {
+            const uploadArea = document.getElementById('uploadArea');
+            const selectFileBtn = document.getElementById('selectFileBtn');
+            const fileInput = document.getElementById('fileInput');
+
+            // File input
+            selectFileBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#764ba2';
+                uploadArea.style.background = 'rgba(102, 126, 234, 0.1)';
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '#667eea';
+                uploadArea.style.background = 'transparent';
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#667eea';
+                uploadArea.style.background = 'transparent';
+                if (e.dataTransfer.files.length > 0) {
+                    handleFileUpload(e.dataTransfer.files[0]);
+                }
+            });
+        }
+
+        async function handleFileUpload(file) {
+            try {
+                console.log('Uploading file:', file.name);
+
+                // Upload to localStorage
+                const uploadManager = new SimpleUploadManager();
+                const result = await uploadManager.createDemoUpload(
+                    file,
+                    file.name,
+                    (progress, message) => {
+                        console.log(`${progress}% - ${message}`);
+                    }
+                );
+
+                console.log('Upload result:', result);
+
+                // Generate share link
+                const shareUrl = `${window.location.origin}/?id=${result.fileId}`;
+                
+                // Show success
+                alert(`✅ File uploaded!\n\nShare link:\n${shareUrl}`);
+
+                // Copy to clipboard
+                navigator.clipboard.writeText(shareUrl);
+
+                // Redirect to new file
+                window.location.href = shareUrl;
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Upload failed: ' + error.message);
+            }
+        }
+
+        function setupViewerButtons(fileData) {
+            document.getElementById('downloadBtn').addEventListener('click', () => {
+                downloadFile(fileData);
+            });
+
+            document.getElementById('shareBtn').addEventListener('click', () => {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Link copied to clipboard!');
+                });
+            });
+        }
+
+        function downloadFile(fileData) {
+            try {
+                const fileName = fileData.name || 'file';
+                const link = document.createElement('a');
+                link.href = `data:${fileData.type || 'application/octet-stream'};base64,${fileData.data}`;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                console.log('Download started:', fileName);
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Download failed. Please try again.');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        initApp();
+    </script>
+</body>
 </html>
