@@ -9,11 +9,11 @@
   NODE_VERSION = "18"
   NODE_ENV = "production"
 
-# Environment variables
-[[context.production.environment]]
+# Production environment variables
+[context.production.environment]
   GITHUB_TOKEN = ""
   GITHUB_OWNER = ""
-  GITHUB_REPO = "avfile-storage"
+  GITHUB_REPO = "Avfile"
   DISCORD_WEBHOOK_URL = ""
 
 # Redirects for single-page app - ORDER MATTERS
