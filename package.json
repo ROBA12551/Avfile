@@ -1,0 +1,23 @@
+{
+  "name": "avfile",
+  "version": "1.0.0",
+  "description": "Fast file sharing platform with video compression",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Avfile build complete' && exit 0",
+    "dev": "echo 'Development server - use live-server or similar'",
+    "start": "echo 'Start command'"
+  },
+  "keywords": [
+    "avfile",
+    "file-sharing",
+    "video-compression",
+    "upload",
+    "download"
+  ],
+  "author": "Avfile Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
