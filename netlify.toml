@@ -1,0 +1,70 @@
+# Netlify Configuration
+# https://docs.netlify.com/configure-builds/file-conventions/
+
+[build]
+  # ビルドコマンド
+  command = "npm run build"
+  
+  # 本番化するディレクトリ
+  publish = "dist"
+  
+  # Function コード
+  functions = "netlify/functions"
+
+[build.environment]
+  # Node.js バージョン指定
+  NODE_VERSION = "18.17.0"
+
+# Functions の設定
+[[functions]]
+  node_bundler = "esbuild"
+
+# Environment Variables（本番用）
+# GitHub
+[build.environment]
+  GITHUB_TOKEN = ""          # secrets から取得
+  GITHUB_OWNER = ""          # secrets から取得
+  GITHUB_REPO = ""           # secrets から取得
+
+# Discord
+  DISCORD_WEBHOOK_URL = ""   # secrets から取得
+
+# API Rate Limit
+  RATE_LIMIT_REQUESTS = "60"
+  RATE_LIMIT_WINDOW = "3600"  # 1時間
+
+# Request/Response キャッシュ
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';"
+
+# CORS設定
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# Redirect: SPA ルーティング
+[[redirects]]
+  from = "/v/*"
+  to = "/v/index.html"
+  status = 200
+
+# Functions の環境変数
+[functions."github-upload"]
+  environment = ["GITHUB_TOKEN", "GITHUB_OWNER", "GITHUB_REPO"]
+
+[functions."github-delete"]
+  environment = ["GITHUB_TOKEN", "GITHUB_OWNER", "GITHUB_REPO"]
+
+[functions."report-submit"]
+  environment = ["DISCORD_WEBHOOK_URL"]
+
+[functions."file-info"]
+  environment = ["GITHUB_TOKEN", "GITHUB_OWNER", "GITHUB_REPO"]

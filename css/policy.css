@@ -1,0 +1,381 @@
+/**
+ * css/policy.css
+ * ポリシーページのスタイル
+ */
+
+/* ========== リセット & 基本 ========== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.7;
+  color: #333;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  min-height: 100vh;
+}
+
+/* ========== ナビゲーション ========== */
+
+.navbar {
+  background: rgba(26, 26, 46, 0.98);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.navbar-logo:hover {
+  color: #ffd700;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  color: #ffd700;
+}
+
+/* ========== コンテナ ========== */
+
+.policy-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 3rem;
+  min-height: calc(100vh - 200px);
+}
+
+/* ========== サイドバー（目次） ========== */
+
+.sidebar {
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+}
+
+.toc {
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+  color: white;
+}
+
+.toc h3 {
+  font-size: 1.1rem;
+  color: #ffd700;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+  padding-bottom: 0.75rem;
+}
+
+.toc ul {
+  list-style: none;
+}
+
+.toc li {
+  margin-bottom: 0.75rem;
+}
+
+.toc a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: block;
+  padding: 0.5rem 0;
+  border-left: 3px solid transparent;
+  padding-left: 0.75rem;
+}
+
+.toc a:hover {
+  color: #ffd700;
+  border-left-color: #ffd700;
+  background: rgba(255, 215, 0, 0.05);
+  padding-left: 1rem;
+}
+
+/* ========== コンテンツ ========== */
+
+.policy-content {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.policy-section {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.policy-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.policy-content h1 {
+  font-size: 2rem;
+  color: white;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid #ffd700;
+  padding-bottom: 0.75rem;
+}
+
+.policy-content h2 {
+  font-size: 1.35rem;
+  color: #ffd700;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.policy-content p {
+  margin-bottom: 1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.policy-content ul {
+  margin: 1rem 0 1rem 2rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.policy-content li {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.policy-content strong {
+  color: #ffd700;
+  font-weight: 600;
+}
+
+.policy-content a {
+  color: #ffd700;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.policy-content a:hover {
+  color: #ffed4e;
+  text-decoration: underline;
+}
+
+/* ========== コンタクトボックス ========== */
+
+.contact-box {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.contact-box p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+.contact-box strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #ffd700;
+}
+
+.contact-box em {
+  display: block;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.5rem;
+}
+
+/* ========== フッターノート ========== */
+
+.footer-note {
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.footer-note p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+/* ========== フッター ========== */
+
+.footer {
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(255, 215, 0, 0.1);
+  padding: 2rem;
+  margin-top: 4rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.footer-links a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #ffd700;
+}
+
+.footer-text {
+  text-align: center;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ========== レスポンシブ ========== */
+
+@media (max-width: 1024px) {
+  .policy-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .sidebar {
+    position: static;
+    top: auto;
+  }
+
+  .toc {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+
+  .policy-container {
+    padding: 1.5rem;
+  }
+
+  .policy-content {
+    padding: 1.5rem;
+  }
+
+  .policy-content h1 {
+    font-size: 1.5rem;
+  }
+
+  .policy-content h2 {
+    font-size: 1.2rem;
+    margin-top: 1.25rem;
+  }
+
+  .toc ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .toc li {
+    margin-bottom: 0;
+  }
+
+  .toc a {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-left: none;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .toc a:hover {
+    border-left: none;
+    padding-left: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .policy-container {
+    padding: 1rem;
+  }
+
+  .policy-content {
+    padding: 1rem;
+  }
+
+  .policy-content h1 {
+    font-size: 1.3rem;
+  }
+
+  .policy-content h2 {
+    font-size: 1.1rem;
+  }
+
+  .contact-box {
+    padding: 1rem;
+  }
+
+  .contact-box p {
+    font-size: 0.9rem;
+  }
+
+  .footer-links {
+    gap: 1rem;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .toc ul {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
