@@ -20,6 +20,7 @@
         <div class="navbar-menu">
           <a href="#" class="nav-link">Home</a>
           <a href="policy.html" class="nav-link">Terms</a>
+          <a href="#" class="nav-link">Contact</a>
         </div>
 
         <div class="navbar-right">
@@ -29,8 +30,8 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content">
-      <!-- Hero Section -->
+    <main class="main-content" id="mainContent">
+      <!-- Upload Section (shown by default) -->
       <section class="hero">
         <div class="hero-container">
           <div class="hero-text">
@@ -110,8 +111,8 @@
               </div>
 
               <div class="success-stats">
-                <p><span id="totalUploads">0</span> files uploaded</p>
-                <p><span id="totalStorage">0</span> MB total storage</p>
+                <p>📊 <span id="totalUploads">0</span> files uploaded</p>
+                <p>💾 <span id="totalStorage">0</span> MB total storage</p>
               </div>
             </div>
 
@@ -134,33 +135,49 @@
       <section class="features">
         <div class="features-container">
           <div class="feature-card">
+            <div class="feature-icon">⚡</div>
             <h3>Lightning Fast</h3>
             <p>Upload and get your link in seconds.</p>
           </div>
 
           <div class="feature-card">
+            <div class="feature-icon">🔒</div>
             <h3>100% Secure</h3>
             <p>Industry-standard encryption for all files.</p>
           </div>
 
           <div class="feature-card">
+            <div class="feature-icon">📱</div>
             <h3>Works Everywhere</h3>
             <p>Upload from any device.</p>
           </div>
 
           <div class="feature-card">
+            <div class="feature-icon">🎯</div>
             <h3>No Login</h3>
             <p>Start sharing instantly.</p>
           </div>
 
           <div class="feature-card">
+            <div class="feature-icon">∞</div>
             <h3>Unlimited</h3>
             <p>Unlimited downloads, files never expire.</p>
           </div>
 
           <div class="feature-card">
+            <div class="feature-icon">⭐</div>
             <h3>Simple & Fast</h3>
             <p>No complicated setup needed.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upload History Section -->
+      <section class="upload-history-section">
+        <div class="upload-history-container">
+          <h2>📋 Upload History</h2>
+          <div id="uploadHistory" class="upload-history-list">
+            <p class="no-uploads">No uploads yet. Upload a file to see history.</p>
           </div>
         </div>
       </section>
@@ -173,8 +190,9 @@
           <a href="#">Home</a>
           <a href="policy.html">Terms</a>
           <a href="policy.html#privacy">Privacy</a>
+          <a href="#">Contact</a>
         </div>
-        <p class="footer-text">Avfile © 2026 | Fast File Sharing</p>
+        <p class="footer-text">Avfile © 2025 | Fast File Sharing</p>
       </div>
     </footer>
 
@@ -182,6 +200,7 @@
     <script src="js/storage.js"></script>
     <script src="js/compress.js"></script>
     <script src="js/github-api-netlify.js"></script>
+    <script src="js/viewer.js"></script>
     <script src="js/index.js"></script>
   </body>
 </html>

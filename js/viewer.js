@@ -1,346 +1,207 @@
 /**
- * js/viewer.js
+ * js/viewer-embedded.js
  * 
- * ビデオプレビュー・ビューアページのロジック
- * - Release ID からファイル情報を取得
- * - 動画をストリーミング再生
- * - ダウンロード・共有機能
- * - 通報機能
+ * ビューアー機能をメインアプリに統合
+ * URL パラメータで自動的にビューアーモードに切り替え
  */
 
-// グローバル状態
-const viewerState = {
-  storage: null,
-  releaseId: null,
-  fileData: null,
-  isLoaded: false,
-};
-
-// アップロード管理（SimpleUploadManager へのアクセス用）
-const appState = {
-  github: null,
-};
-
-/**
- * 初期化
- */
-document.addEventListener('DOMContentLoaded', async () => {
-  viewerState.storage = new StorageManager();
-  appState.github = new SimpleUploadManager(); // localStorage アクセス用
-
-  // URL から File ID を取得
-  const urlParams = new URLSearchParams(window.location.search);
-  viewerState.releaseId = urlParams.get('id') || getFileIdFromPath();
-
-  if (!viewerState.releaseId) {
-    showError('No file specified');
-    return;
+class EmbeddedViewer {
+  constructor() {
+    this.fileId = null;
+    this.fileData = null;
+    this.isViewing = false;
   }
 
-  // ファイル情報を取得
-  await loadFileInfo();
-
-  // イベントリスナー登録
-  setupEventListeners();
-
-  console.log('✅ Viewer initialized');
-});
-
-/**
- * パスから File ID を抽出
- * 例: /?id=xxx-xxx-xxx → xxx-xxx-xxx
- * または: /view/xxx-xxx-xxx → xxx-xxx-xxx
- */
-function getFileIdFromPath() {
-  // クエリパラメータから取得
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
-  if (id) return id;
-  
-  // パスから取得
-  const pathMatch = window.location.pathname.match(/\/view\/(.+)$/);
-  return pathMatch ? pathMatch[1] : null;
-}
-
-/**
- * ファイル情報を取得（localStorage から）
- */
-async function loadFileInfo() {
-  try {
-    console.log('📥 Loading file info...');
-    showPreparing();
-
-    // localStorage からファイルデータを取得
-    const fileData = appState.github?.getFileData(viewerState.releaseId);
-    
-    if (fileData) {
-      console.log('✅ File found in localStorage');
-      viewerState.fileData = fileData;
-      
-      // 再生回数を増加
-      viewerState.storage.incrementViewCount(viewerState.fileData.id);
-      
-      // UI を更新
-      showContent(viewerState.fileData);
-      viewerState.isLoaded = true;
-      console.log('✅ File loaded');
-    } else {
-      // localStorage に見つからない場合
-      throw new Error('File not found');
-    }
-
-  } catch (error) {
-    console.error('❌ Error loading file:', error);
-    showError('Failed to load file. ' + error.message);
-  }
-}
-
-/**
- * 準備中画面を表示
- */
-function showPreparing() {
-  document.getElementById('preparingArea').style.display = 'block';
-  document.getElementById('contentArea').style.display = 'none';
-  document.getElementById('errorArea').style.display = 'none';
-
-  // プログレスアニメーション
-  let progress = 0;
-  const interval = setInterval(() => {
-    progress += Math.random() * 30;
-    if (progress > 90) progress = 90;
-
-    const progressFill = document.getElementById('preparingProgress');
-    progressFill.style.width = progress + '%';
-
-    if (viewerState.isLoaded) {
-      clearInterval(interval);
-    }
-  }, 300);
-}
-
-/**
- * コンテンツを表示
- * @param {Object} fileData - ファイル情報
- */
-function showContent(fileData) {
-  document.getElementById('preparingArea').style.display = 'none';
-  document.getElementById('contentArea').style.display = 'block';
-  document.getElementById('errorArea').style.display = 'none';
-
-  // ファイル情報を表示
-  const fileName = fileData.name || fileData.title || fileData.original_filename || 'File';
-  document.getElementById('fileName').textContent = fileName;
-
-  // ファイルサイズをフォーマット
-  const fileSize = fileData.size || fileData.compressed_size || 0;
-  const sizeInMB = (fileSize / 1024 / 1024).toFixed(1);
-  document.getElementById('fileSize').innerHTML =
-    `<strong>Size:</strong> ${sizeInMB} MB`;
-
-  // アップロード日時
-  const uploadTime = fileData.uploadedAt || fileData.created_at || new Date().toISOString();
-  const uploadDate = new Date(uploadTime).toLocaleString();
-  document.getElementById('uploadTime').innerHTML =
-    `<strong>Uploaded:</strong> ${uploadDate}`;
-
-  // ファイルタイプを判定
-  const fileType = fileData.type || 'application/octet-stream';
-  const isVideo = fileType.startsWith('video/');
-  const isImage = fileType.startsWith('image/');
-
-  // 動画の場合
-  if (isVideo && fileData.data) {
-    const videoSource = document.getElementById('videoSource');
-    videoSource.src = `data:${fileType};base64,${fileData.data}`;
-    videoSource.type = fileType;
-
-    const videoPlayer = document.getElementById('videoPlayer');
-    videoPlayer.style.display = 'block';
-    videoPlayer.load();
-  } else if (isImage && fileData.data) {
-    // 画像の場合
-    const videoWrapper = document.querySelector('.video-wrapper');
-    videoWrapper.innerHTML = `<img src="data:${fileType};base64,${fileData.data}" style="max-width: 100%; max-height: 600px; object-fit: contain;" />`;
-  } else if (fileData.data) {
-    // その他のファイル
-    const videoWrapper = document.querySelector('.video-wrapper');
-    videoWrapper.innerHTML = `<div style="text-align: center; padding: 40px;">
-      <h3>${fileName}</h3>
-      <p>File type: ${fileType}</p>
-      <button id="downloadFileBtn" class="btn btn-primary" style="margin-top: 20px;">Download File</button>
-    </div>`;
-    
-    document.getElementById('downloadFileBtn')?.addEventListener('click', () => {
-      downloadFile(fileData);
-    });
+  /**
+   * URL からファイル ID を取得
+   */
+  getFileIdFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('id') || this.getFileIdFromPath();
   }
 
-  // 共有 URL を設定
-  const shareUrl = window.location.href;
-  document.getElementById('shareUrl').value = shareUrl;
-}
+  /**
+   * パスからファイル ID を取得
+   */
+  getFileIdFromPath() {
+    const pathMatch = window.location.pathname.match(/\/view\/(.+)$/);
+    return pathMatch ? pathMatch[1] : null;
+  }
 
-/**
- * エラー画面を表示
- * @param {string} message - エラーメッセージ
- */
-function showError(message) {
-  document.getElementById('preparingArea').style.display = 'none';
-  document.getElementById('contentArea').style.display = 'none';
-  document.getElementById('errorArea').style.display = 'block';
-
-  document.getElementById('errorMessage').textContent = message;
-}
-
-/**
- * イベントリスナー登録
- */
-function setupEventListeners() {
-  // コピーボタン
-  document.getElementById('copyBtn')?.addEventListener('click', () => {
-    const shareUrl = document.getElementById('shareUrl');
-    shareUrl.select();
-
-    navigator.clipboard.writeText(shareUrl.value).then(() => {
-      const btn = document.getElementById('copyBtn');
-      const originalText = btn.textContent;
-
-      btn.textContent = '✓ Copied!';
-      setTimeout(() => {
-        btn.textContent = originalText;
-      }, 2000);
-    });
-  });
-
-  // ダウンロードボタン
-  document.getElementById('downloadBtn')?.addEventListener('click', () => {
-    if (viewerState.fileData) {
-      downloadFile(viewerState.fileData);
-    }
-  });
-
-  // 再生ボタン
-  document.getElementById('playBtn')?.addEventListener('click', () => {
-    const videoPlayer = document.getElementById('videoPlayer');
-    if (videoPlayer.paused) {
-      videoPlayer.play();
-    } else {
-      videoPlayer.pause();
-    }
-  });
-
-  // 通報ボタン
-  document.getElementById('reportBtn')?.addEventListener('click', () => {
-    document.getElementById('reportModal').style.display = 'flex';
-  });
-
-  // モーダル閉じるボタン
-  document.getElementById('closeReport')?.addEventListener('click', () => {
-    document.getElementById('reportModal').style.display = 'none';
-  });
-
-  document.getElementById('cancelReport')?.addEventListener('click', () => {
-    document.getElementById('reportModal').style.display = 'none';
-  });
-
-  // 通報フォーム送信
-  document.getElementById('reportForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const reason = document.getElementById('reportReason').value;
-    const details = document.getElementById('reportDetails').value;
-
-    if (!reason) {
-      alert('Please select a reason');
-      return;
-    }
-
+  /**
+   * ビューアーモードで起動
+   */
+  async initViewer(fileId, uploadManager) {
     try {
-      // 通報を送信（本実装では Netlify Function へ）
-      console.log('📤 Submitting report:', { reason, details });
+      console.log('📺 Initializing viewer mode...');
+      this.fileId = fileId;
 
-      // モック実装
-      alert('Report submitted. Thank you for helping us keep the platform safe.');
-      document.getElementById('reportModal').style.display = 'none';
-      document.getElementById('reportForm').reset();
+      // localStorage からファイルを取得
+      const fileData = uploadManager.getFileData(fileId);
+
+      if (!fileData) {
+        console.error('❌ File not found:', fileId);
+        this.showViewerError('File not found. It may have been deleted.');
+        return false;
+      }
+
+      this.fileData = fileData;
+      this.isViewing = true;
+
+      // UI を準備
+      this.setupViewerUI(fileData);
+      console.log('✅ Viewer mode active');
+      return true;
+
     } catch (error) {
-      alert('Failed to submit report: ' + error.message);
+      console.error('❌ Error initializing viewer:', error);
+      this.showViewerError(error.message);
+      return false;
     }
-  });
+  }
 
-  // テキストエリアの文字数カウント
-  document.getElementById('reportDetails')?.addEventListener('input', (e) => {
-    const count = e.target.value.length;
-    document.getElementById('charCount').textContent = `${count}/500`;
-  });
+  /**
+   * ビューアー UI をセットアップ
+   */
+  setupViewerUI(fileData) {
+    // メインコンテンツを非表示
+    const mainContent = document.getElementById('mainContent');
+    if (mainContent) mainContent.style.display = 'none';
 
-  // ソーシャルシェア
-  setupSocialShare();
-
-  // モーダル外側をクリックで閉じる
-  document.getElementById('reportModal')?.addEventListener('click', (e) => {
-    if (e.target.id === 'reportModal') {
-      document.getElementById('reportModal').style.display = 'none';
+    // ビューアーコンテナを作成
+    let viewerContainer = document.getElementById('viewerContainer');
+    if (!viewerContainer) {
+      viewerContainer = document.createElement('div');
+      viewerContainer.id = 'viewerContainer';
+      document.body.appendChild(viewerContainer);
     }
-  });
-}
 
-/**
- * ソーシャルシェア機能
- */
-function setupSocialShare() {
-  const shareUrl = window.location.href;
+    // ビューアーコンテンツを生成
+    const isVideo = fileData.type?.startsWith('video/');
+    const isImage = fileData.type?.startsWith('image/');
 
-  document.getElementById('shareTwitter')?.addEventListener('click', () => {
-    const text = encodeURIComponent(`Check out this video: "${viewerState.fileData?.title || 'Video'}"`);
-    window.open(
-      `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(shareUrl)}`,
-      '_blank',
-      'width=500,height=400'
-    );
-  });
+    let content = `
+      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #1a1a2e; z-index: 1000; display: flex; flex-direction: column;">
+        <!-- Header -->
+        <div style="background: #0f0f1e; padding: 1rem; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <a href="/" style="color: #FFD700; text-decoration: none; font-weight: bold; font-size: 1.2rem;">← Back</a>
+          </div>
+          <h2 style="color: white; margin: 0; flex: 1; text-align: center;">${this.escapeHtml(fileData.name || 'File')}</h2>
+          <button id="downloadViewerBtn" style="background: #667eea; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">Download</button>
+        </div>
 
-  document.getElementById('shareLINE')?.addEventListener('click', () => {
-    window.open(
-      `https://line.me/R/msg/text/${encodeURIComponent(shareUrl)}`,
-      '_blank'
-    );
-  });
+        <!-- Content -->
+        <div style="flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+    `;
 
-  document.getElementById('shareEmail')?.addEventListener('click', () => {
-    const subject = encodeURIComponent(`Video: ${viewerState.fileData?.title || 'Shared Video'}`);
-    const body = encodeURIComponent(`Check out this video:\n\n${shareUrl}`);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  });
-}
+    if (isVideo && fileData.data) {
+      content += `
+        <video style="max-width: 90%; max-height: 90%; object-fit: contain;" controls>
+          <source src="data:${fileData.type};base64,${fileData.data}" type="${fileData.type}" />
+          Your browser does not support the video tag.
+        </video>
+      `;
+    } else if (isImage && fileData.data) {
+      content += `
+        <img src="data:${fileData.type};base64,${fileData.data}" style="max-width: 90%; max-height: 90%; object-fit: contain;" alt="${this.escapeHtml(fileData.name)}" />
+      `;
+    } else {
+      content += `
+        <div style="text-align: center; color: white;">
+          <h3>📄 ${this.escapeHtml(fileData.name)}</h3>
+          <p>Size: ${(fileData.size / 1024 / 1024).toFixed(1)} MB</p>
+          <button id="downloadViewerBtn" style="background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 1rem;">Download File</button>
+        </div>
+      `;
+    }
 
-/**
- * ファイルをダウンロード
- */
-function downloadFile(fileData) {
-  const fileName = fileData.name || fileData.original_filename || 'file';
-  
-  if (fileData.data) {
-    // Base64 データからダウンロード
-    const link = document.createElement('a');
-    link.href = `data:${fileData.type || 'application/octet-stream'};base64,${fileData.data}`;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    console.log('✅ Download started:', fileName);
-  } else if (fileData.downloadUrl) {
-    // URL からダウンロード
-    const link = document.createElement('a');
-    link.href = fileData.downloadUrl;
-    link.download = fileName;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    console.log('✅ Download started:', fileName);
-  } else {
-    console.error('❌ No file data available for download');
-    alert('File data not available. Please try again.');
+    content += `
+        </div>
+
+        <!-- Info -->
+        <div style="background: #0f0f1e; padding: 1rem; border-top: 1px solid #333; color: #ccc; font-size: 0.9rem;">
+          <p>Size: ${(fileData.size / 1024 / 1024).toFixed(1)} MB | Type: ${fileData.type || 'Unknown'}</p>
+        </div>
+      </div>
+    `;
+
+    viewerContainer.innerHTML = content;
+
+    // ダウンロードボタンのイベントリスナー
+    document.getElementById('downloadViewerBtn')?.addEventListener('click', () => {
+      this.downloadFile(fileData);
+    });
+  }
+
+  /**
+   * ファイルをダウンロード
+   */
+  downloadFile(fileData) {
+    try {
+      const fileName = fileData.name || 'file';
+      
+      if (fileData.data) {
+        const link = document.createElement('a');
+        link.href = `data:${fileData.type || 'application/octet-stream'};base64,${fileData.data}`;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        console.log('✅ Download started:', fileName);
+      } else {
+        alert('File data not available');
+      }
+    } catch (error) {
+      console.error('❌ Download failed:', error);
+      alert('Download failed. Please try again.');
+    }
+  }
+
+  /**
+   * HTML エスケープ
+   */
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  /**
+   * ビューアーエラーを表示
+   */
+  showViewerError(message) {
+    const viewerContainer = document.getElementById('viewerContainer');
+    if (!viewerContainer) {
+      const container = document.createElement('div');
+      container.id = 'viewerContainer';
+      document.body.appendChild(container);
+    }
+
+    document.getElementById('viewerContainer').innerHTML = `
+      <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 8px; text-align: center; z-index: 1000;">
+        <h2>Error</h2>
+        <p>${this.escapeHtml(message)}</p>
+        <a href="/" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #667eea; color: white; text-decoration: none; border-radius: 4px;">Go Home</a>
+      </div>
+    `;
+  }
+
+  /**
+   * ビューアーをクローズ
+   */
+  close() {
+    const viewerContainer = document.getElementById('viewerContainer');
+    if (viewerContainer) {
+      viewerContainer.remove();
+    }
+
+    const mainContent = document.getElementById('mainContent');
+    if (mainContent) mainContent.style.display = 'block';
+
+    this.isViewing = false;
   }
 }
+
+// グローバルエクスポート
+window.EmbeddedViewer = EmbeddedViewer;

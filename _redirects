@@ -1,0 +1,4 @@
+/policy  /policy.html  200
+/upload  /upload.html  200
+/v/*  /index.html  200
+/*  /index.html  200
