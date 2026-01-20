@@ -1,4 +1,14 @@
+/**
+ * js/index-fast.js
+ * 
+ * Optimized for FASTEST upload performance
+ * - Minimal processing
+ * - Parallel uploads
+ * - Quick feedback
+ * - No unnecessary operations
+ */
 
+// Global state
 const appState = {
   storage: null,
   compression: null,
@@ -15,10 +25,7 @@ const appState = {
 document.addEventListener('DOMContentLoaded', async () => {
   appState.storage = new StorageManager();
   appState.compression = new VideoCompressionEngine();
-  appState.github = new GitHubUploadManagerNetlify({
-    apiBaseUrl: '/.netlify/functions',
-    requestTimeout: 30000,
-  });
+  appState.github = new SimpleUploadManager(); // Changed to SimpleUploadManager
 
   // FFmpeg 準備は不要（フォールバック対応）
   setupEventListeners();
@@ -93,14 +100,14 @@ async function handleFileSelect(file) {
   else if (isImage) fileType = 'image';
   else if (isDocument) fileType = 'document';
 
-  console.log(`📁 ${fileType}: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+  console.log(` ${fileType}: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
 
   appState.currentFile = file;
   showProcessing();
 
   try {
     // 1. PREPARE FILE
-    console.log('📥 Preparing file...');
+    console.log(' Preparing file...');
     const fileTypeMessage = isVideo ? 'Optimizing video' : 'Preparing file';
     updateProgress(5, fileTypeMessage + '...');
 
@@ -116,22 +123,11 @@ async function handleFileSelect(file) {
 
     // 2. UPLOAD to GitHub via Netlify
     const fileId = generateUUID();
-    const metadata = {
-      file_id: fileId,
-      original_filename: file.name,
-      original_size: file.size,
-      compressed_size: compressedBlob.size,
-      compression_ratio: (compressedBlob.size / file.size).toFixed(4),
-      resolution: '720p',
-      fps: 30,
-      upload_time: new Date().toISOString(),
-      uploader_id: appState.storage.getUserId(),
-      title: file.name.replace(/\.[^/.]+$/, ''),
-    };
-
-    const uploadResult = await appState.github.uploadWithMetadata(
+    
+    // シンプルなアップロード
+    const uploadResult = await appState.github.uploadToGitHub(
       compressedBlob,
-      metadata,
+      `${fileId}-${file.name}`,
       (percent, message) => {
         updateProgress(40 + percent * 0.6, message); // 60% of total
       }
@@ -139,25 +135,23 @@ async function handleFileSelect(file) {
 
     console.log('✅ Upload complete');
 
-    // 3. SAVE to localStorage
+    // localStorage に保存
     appState.storage.addUpload({
       file_id: fileId,
-      release_id: uploadResult.release_id,
-      title: metadata.title,
+      title: file.name.replace(/\.[^/.]+$/, ''),
       original_filename: file.name,
       original_size: file.size,
-      compressed_size: compressedBlob.size,
-      asset_url: uploadResult.asset_url,
-      download_url: uploadResult.asset_url,
+      download_url: uploadResult.downloadUrl,
+      uploaded_at: new Date().toISOString(),
     });
 
-    // 4. SHOW SUCCESS
+    // 成功画面を表示
     updateProgress(100, 'Complete!');
     showSuccess(uploadResult);
 
   } catch (error) {
     console.error('❌ Error:', error);
-    const userMessage = GitHubUploadManagerNetlify.getErrorMessage(error);
+    const userMessage = error.message || 'Upload failed. Please try again.';
     showError(userMessage);
   }
 }
@@ -186,7 +180,7 @@ function updateProgress(percent, message) {
   document.getElementById('processingMessage').textContent = message;
   document.getElementById('processingTitle').textContent = message;
 
-  console.log(`📊 ${percent.toFixed(0)}% - ${message}`);
+  console.log(` ${percent.toFixed(0)}% - ${message}`);
 }
 
 /**
@@ -199,7 +193,7 @@ function showSuccess(uploadResult) {
   document.getElementById('errorArea').style.display = 'none';
 
   // Generate share URL
-  const shareUrl = `${window.location.origin}/v/${uploadResult.release_id}`;
+  const shareUrl = uploadResult.downloadUrl || window.location.origin;
   document.getElementById('shareUrl').value = shareUrl;
 
   // Update stats
