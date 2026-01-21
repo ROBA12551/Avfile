@@ -138,50 +138,6 @@ class SimpleUploadManager {
   }
 
   /**
-   * IndexedDB にフォールバック
-   */
-  async fallbackToIndexedDB(fileBlob, fileName, onProgress) {
-    try {
-      console.log('📁 Fallback: Saving to IndexedDB...');
-      
-      onProgress(50, 'Saving to IndexedDB...');
-
-      const fileId = this.generateUUID();
-      const base64 = await this.fileToBase64(fileBlob);
-
-      const fileInfo = {
-        id: fileId,
-        name: fileName,
-        size: fileBlob.size,
-        type: fileBlob.type,
-        uploadedAt: new Date().toISOString(),
-        data: base64,
-      };
-
-      // IndexedDB に保存
-      await this.saveFileToIndexedDB(fileInfo);
-
-      onProgress(80, 'Saving metadata...');
-
-      // メタデータを localStorage に保存
-      this.saveMetadata(fileId, fileName, fileBlob.size, fileInfo.uploadedAt);
-
-      onProgress(100, 'Upload complete!');
-
-      return {
-        success: true,
-        fileName: fileName,
-        downloadUrl: `${window.location.origin}/?id=${fileId}`,
-        fileSize: fileBlob.size,
-        fileId: fileId,
-      };
-    } catch (error) {
-      console.error('❌ IndexedDB fallback error:', error.message);
-      throw error;
-    }
-  }
-
-  /**
    * メタデータを localStorage に保存（小サイズなので OK）
    */
   saveMetadata(fileId, fileName, fileSize, uploadedAt) {
@@ -204,18 +160,11 @@ class SimpleUploadManager {
   }
 
   /**
-   * デモモード - GitHub Releases にアップロード
+   * デモモード - IndexedDB にアップロード
    */
-  async createDemoUpload(fileBlob, fileName, onProgress) {
+  async createDemoUpload(fileBlob, fileName, onProgress = () => {}) {
     try {
-      // onProgress がない場合のデフォルト
-      if (typeof onProgress !== 'function') {
-        onProgress = (progress, message) => {
-          console.log(`[${progress}%] ${message}`);
-        };
-      }
-
-      console.log('📁 Uploading to GitHub Releases...');
+      console.log('📁 Demo mode: Uploading to IndexedDB...');
       
       onProgress(10, 'Checking file type...');
 
@@ -241,37 +190,39 @@ class SimpleUploadManager {
 
       // Base64 にエンコード
       const base64 = await this.fileToBase64(processedBlob);
-      console.log(`📊 File size: ${fileBlob.size} bytes, Compressed: ${processedBlob.size} bytes`);
+      console.log(`📊 File size: ${fileBlob.size} bytes, Base64 size: ${base64.length} bytes`);
 
-      onProgress(50, 'Creating GitHub Release...');
+      onProgress(60, 'Saving to IndexedDB...');
 
-      // GitHub に Netlify Function 経由でアップロード
-      try {
-        const uploadResponse = await this.uploadToGitHub(fileId, fileName, base64, processedBlob.type, onProgress);
-        
-        onProgress(80, 'Saving metadata...');
+      // ファイル情報を作成
+      const fileInfo = {
+        id: fileId,
+        name: fileName,
+        size: processedBlob.size,
+        type: processedBlob.type || fileBlob.type,
+        uploadedAt: new Date().toISOString(),
+        data: base64,
+      };
 
-        // メタデータを localStorage に保存
-        this.saveMetadata(fileId, fileName, processedBlob.size, new Date().toISOString());
+      // IndexedDB に保存（容量無制限）
+      await this.saveFileToIndexedDB(fileInfo);
 
-        onProgress(100, 'Upload complete!');
+      onProgress(80, 'Saving metadata...');
 
-        console.log('✅ File uploaded to GitHub successfully');
+      // メタデータを localStorage に保存
+      this.saveMetadata(fileId, fileName, processedBlob.size, fileInfo.uploadedAt);
 
-        return {
-          success: true,
-          fileName: fileName,
-          downloadUrl: uploadResponse.download_url,
-          fileSize: processedBlob.size,
-          fileId: fileId,
-          githubUrl: uploadResponse.html_url,
-        };
-      } catch (githubError) {
-        console.warn('⚠️ GitHub upload failed, falling back to IndexedDB:', githubError.message);
-        
-        // GitHub アップロード失敗時は IndexedDB にフォールバック
-        return await this.fallbackToIndexedDB(processedBlob, fileName, onProgress);
-      }
+      onProgress(100, 'Upload complete!');
+
+      console.log('✅ File uploaded successfully');
+
+      return {
+        success: true,
+        fileName: fileName,
+        downloadUrl: `${window.location.origin}/?id=${fileId}`,
+        fileSize: processedBlob.size,
+        fileId: fileId,
+      };
     } catch (error) {
       console.error('❌ Upload error:', error.message);
       throw new Error(`Upload failed: ${error.message}`);
@@ -279,167 +230,85 @@ class SimpleUploadManager {
   }
 
   /**
-   * GitHub Releases にアップロード（Netlify Function経由）
+   * GitHub API を使用したアップロード
    */
-  async uploadToGitHub(fileId, fileName, base64, fileType, onProgress) {
+  async uploadToGitHub(fileBlob, fileName, onProgress = () => {}) {
     try {
-      // onProgress がない場合のデフォルト
-      if (typeof onProgress !== 'function') {
-        onProgress = (progress, message) => {
-          console.log(`[${progress}%] ${message}`);
-        };
+      // GitHub Token を確認
+      const token = localStorage.getItem('github_token');
+      if (!token) {
+        console.warn('⚠️ No GitHub token. Using IndexedDB only.');
+        return this.createDemoUpload(fileBlob, fileName, onProgress);
       }
 
-      const releaseTag = `video_${fileId}`;
-      const assetFileName = `${fileId}.mp4`;
+      const owner = localStorage.getItem('github_owner') || 'user';
+      const repo = localStorage.getItem('github_repo') || 'avfile-files';
 
-      // 1. Release を作成
-      console.log('📝 Creating GitHub Release...');
-      onProgress(50, 'Creating GitHub Release...');
-      const createReleaseResponse = await fetch('/.netlify/functions/github-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'create-release',
-          releaseTag: releaseTag,
-          metadata: {
-            title: `Video Upload: ${fileName}`,
-            description: `Uploaded file: ${fileName}\nFile ID: ${fileId}\nType: ${fileType}`,
-          },
-        }),
+      console.log(`📤 Uploading to GitHub: ${owner}/${repo}`);
+      
+      onProgress(20, 'Connecting to GitHub...');
+
+      // GitHub アップローダーを作成
+      const uploader = new GitHubUploader(token, owner, repo);
+      
+      // Base64 にエンコード
+      onProgress(40, 'Encoding file...');
+      const base64 = await this.fileToBase64(fileBlob);
+
+      // GitHub にアップロード
+      onProgress(60, 'Uploading to GitHub...');
+      const result = await uploader.uploadFile(base64, fileName, (progress, message) => {
+        onProgress(60 + (progress / 2), message);
       });
 
-      if (!createReleaseResponse.ok) {
-        throw new Error(`Failed to create release: ${createReleaseResponse.statusText}`);
-      }
+      onProgress(90, 'Saving metadata...');
 
-      const createData = await createReleaseResponse.json();
-      if (!createData.success) {
-        throw new Error(createData.error || 'Failed to create release');
-      }
+      // メタデータも IndexedDB に保存（ローカルアクセス用）
+      const fileId = this.generateUUID();
+      const fileInfo = {
+        id: fileId,
+        name: fileName,
+        size: fileBlob.size,
+        type: fileBlob.type,
+        uploadedAt: new Date().toISOString(),
+        githubPath: result.filePath,
+        githubUrl: result.downloadUrl,
+        data: base64,  // ローカルキャッシュ
+      };
 
-      console.log('✅ Release created:', createData.data.release_id);
+      // IndexedDB に保存
+      await this.saveFileToIndexedDB(fileInfo);
 
-      // 2. Asset（ファイル）をアップロード
-      console.log('📤 Uploading asset to GitHub...');
-      const uploadAssetResponse = await fetch('/.netlify/functions/github-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'upload-asset',
-          uploadUrl: createData.data.upload_url,
-          fileName: assetFileName,
-          fileBase64: base64,
-        }),
-      });
+      // メタデータを localStorage に保存
+      this.saveMetadata(fileId, fileName, fileBlob.size, fileInfo.uploadedAt);
 
-      if (!uploadAssetResponse.ok) {
-        throw new Error(`Failed to upload asset: ${uploadAssetResponse.statusText}`);
-      }
+      onProgress(100, 'Upload complete!');
 
-      const uploadData = await uploadAssetResponse.json();
-      if (!uploadData.success) {
-        throw new Error(uploadData.error || 'Failed to upload asset');
-      }
-
-      console.log('✅ Asset uploaded:', uploadData.data.asset_id);
+      console.log('✅ File uploaded to GitHub and IndexedDB');
 
       return {
-        release_id: createData.data.release_id,
-        asset_id: uploadData.data.asset_id,
-        download_url: uploadData.data.download_url,
-        html_url: createData.data.html_url,
+        success: true,
+        fileName: fileName,
+        downloadUrl: result.downloadUrl,
+        fileSize: fileBlob.size,
+        fileId: fileId,
+        githubPath: result.filePath,
       };
     } catch (error) {
       console.error('❌ GitHub upload error:', error.message);
-      throw error;
+      console.warn('⚠️ Falling back to IndexedDB only...');
+      // GitHub が失敗した場合は IndexedDB にフォールバック
+      return this.createDemoUpload(fileBlob, fileName, onProgress);
     }
   }
 
   /**
-   * GitHub API を使用したアップロード（古い実装・削除）
-   * NOTE: この実装は削除されました。新しいメソッド uploadToGitHub(fileId, fileName, base64, fileType, onProgress) を使用してください
-   */
-
-  /**
-   * ファイルデータを取得（GitHub Releases または IndexedDB）
+   * ファイルデータを取得
    */
   async getFileData(fileId) {
     try {
-      console.log('📥 Fetching file...');
-
-      // まず IndexedDB をチェック
-      const indexedDBData = await this.getFileFromIndexedDB(fileId);
-      if (indexedDBData) {
-        console.log('✅ File found in IndexedDB');
-        return indexedDBData;
-      }
-
-      // IndexedDB になければ GitHub をチェック
-      console.log('📥 Fetching file from GitHub Releases...');
-
-      const releaseTag = `video_${fileId}`;
-      
-      // Netlify Function 経由で Release 情報を取得
-      const response = await fetch('/.netlify/functions/github-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'get-release-by-tag',
-          releaseTag: releaseTag,
-        }),
-      });
-
-      if (!response.ok) {
-        console.warn('⚠️ File not found in GitHub');
-        return null;
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        console.warn('⚠️ Error fetching file:', data.error);
-        return null;
-      }
-
-      const releaseData = data.data;
-      if (!releaseData.assets || releaseData.assets.length === 0) {
-        console.warn('⚠️ No assets found');
-        return null;
-      }
-
-      const asset = releaseData.assets[0];
-      const downloadUrl = asset.download_url;
-
-      console.log('📥 Downloading file from GitHub...');
-
-      // GitHub から直接ファイルをダウンロード
-      const fileResponse = await fetch(downloadUrl);
-      if (!fileResponse.ok) {
-        throw new Error(`Failed to download file: ${fileResponse.statusText}`);
-      }
-
-      const fileBlob = await fileResponse.blob();
-      const base64 = await this.fileToBase64(fileBlob);
-
-      // メタデータをパース
-      let metadata = {};
-      try {
-        metadata = JSON.parse(releaseData.body || '{}');
-      } catch (e) {
-        console.warn('⚠️ Could not parse metadata');
-      }
-
-      const fileInfo = {
-        id: fileId,
-        name: asset.name || 'file.mp4',
-        size: fileBlob.size,
-        type: 'video/mp4',
-        uploadedAt: releaseData.created_at,
-        data: base64,
-      };
-
-      console.log('✅ File fetched successfully from GitHub');
-      return fileInfo;
+      const fileData = await this.getFileFromIndexedDB(fileId);
+      return fileData;
     } catch (error) {
       console.error('❌ Error getting file:', error.message);
       return null;
