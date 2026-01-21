@@ -78,7 +78,7 @@ async function githubRequest(method, path, body = null, headers = {}) {
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Gofile-Clone-Netlify',
+        'User-Agent': 'Avfile-Clone-Netlify',
         'Content-Type': headers['Content-Type'] || 'application/json',
         ...headers,
       },
@@ -206,17 +206,83 @@ async function getRelease(releaseId) {
 }
 
 /**
- * Release を削除（Admin用）
- * @param {number} releaseId - Release ID
- * @returns {Promise<boolean>}
+ * Release をタグから取得
+ * @param {string} releaseTag - Release タグ
+ * @returns {Promise<Object>} - Release 情報
  */
-async function deleteRelease(releaseId) {
-  console.log(`[deleteRelease] ID: ${releaseId}`);
+async function getReleaseByTag(releaseTag) {
+  console.log(`[getReleaseByTag] Tag: ${releaseTag}`);
 
-  const path = `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/${releaseId}`;
-  await githubRequest('DELETE', path);
+  const path = `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/tags/${releaseTag}`;
+  const response = await githubRequest('GET', path);
 
-  return true;
+  return {
+    release_id: response.data.id,
+    tag_name: response.data.tag_name,
+    assets: response.data.assets || [],
+    created_at: response.data.created_at,
+    body: response.data.body,
+  };
+}
+
+/**
+ * github.json を GitHub から取得
+ */
+async function getGithubJson() {
+  try {
+    const path = `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/github.json`;
+    const response = await githubRequest('GET', path);
+    
+    if (!response.content) {
+      throw new Error('github.json が見つかりません');
+    }
+    
+    // Base64 デコード
+    const content = Buffer.from(response.content, 'base64').toString('utf-8');
+    const jsonData = JSON.parse(content);
+    
+    return {
+      data: jsonData,
+      sha: response.sha,
+    };
+  } catch (error) {
+    if (error.message.includes('404') || error.message.includes('Not Found')) {
+      console.log('📝 github.json が存在しません - 新規作成対象');
+      return {
+        data: { files: [], lastUpdated: new Date().toISOString() },
+        sha: null,
+      };
+    }
+    throw error;
+  }
+}
+
+/**
+ * github.json を GitHub に保存
+ */
+async function saveGithubJson(jsonData, existingSha = null) {
+  try {
+    const path = `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/github.json`;
+    
+    // Base64 エンコード
+    const content = Buffer.from(JSON.stringify(jsonData, null, 2)).toString('base64');
+    
+    const body = {
+      message: `Update github.json - ${new Date().toISOString()}`,
+      content: content,
+      branch: 'main',
+    };
+    
+    // 既存ファイルがあれば sha を含める
+    if (existingSha) {
+      body.sha = existingSha;
+    }
+    
+    const response = await githubRequest('PUT', path, body);
+    return response;
+  } catch (error) {
+    throw new Error(`github.json 保存失敗: ${error.message}`);
+  }
 }
 
 /**
@@ -279,11 +345,32 @@ exports.handler = async (event, context) => {
         response = await getRelease(body.releaseId);
         break;
 
+      case 'get-release-by-tag':
+        if (!body.releaseTag) {
+          throw new Error('Missing releaseTag');
+        }
+        response = await getReleaseByTag(body.releaseTag);
+        break;
+
       case 'delete-release':
         if (!body.releaseId) {
           throw new Error('Missing releaseId');
         }
         response = await deleteRelease(body.releaseId);
+        break;
+
+      case 'get-github-json':
+        const jsonResult = await getGithubJson();
+        response = jsonResult.data;
+        break;
+
+      case 'save-github-json':
+        if (!body.jsonData) {
+          throw new Error('Missing jsonData');
+        }
+        const jsonState = await getGithubJson();
+        await saveGithubJson(body.jsonData, jsonState.sha);
+        response = { success: true, message: 'github.json saved' };
         break;
 
       default:

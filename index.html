@@ -1,194 +1,769 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Avfile - Upload & Share Instantly</title>
-    <link rel="stylesheet" href="css/index.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avfile - Fast File Sharing | Free Online File Upload</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Avfile - Fast, simple, and secure file sharing. Upload files instantly, get a shareable link. No login required, unlimited downloads, files never expire.">
+    <meta name="keywords" content="file sharing, upload files, free file transfer, fast upload, secure sharing, document sharing, video sharing">
+    <meta name="author" content="Avfile">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="7 days">
+    
+    <!-- Open Graph Tags (Social Media) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://avfile.netlify.app">
+    <meta property="og:title" content="Avfile - Fast File Sharing">
+    <meta property="og:description" content="Upload files instantly and get a shareable link. No login required, no limits, files never expire. Simple, fast, and secure.">
+    <meta property="og:image" content="https://avfile.netlify.app/images/folder.png">
+    <meta property="og:site_name" content="Avfile">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter Tags -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://avfile.netlify.app">
+    <meta property="twitter:title" content="Avfile - Fast File Sharing">
+    <meta property="twitter:description" content="Upload files instantly and get a shareable link. No login required, files never expire.">
+    <meta property="twitter:image" content="https://avfile.netlify.app/images/folder.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/folder.png">
+    <link rel="shortcut icon" type="image/png" href="images/folder.png">
+    
+    <!-- Canonical -->
+    <link rel="canonical" href="https://avfile.netlify.app">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
-  </head>
-  <body>
-    <!-- Navigation - Simplified -->
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(15, 15, 30, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo img {
+            width: 30px;
+            height: 30px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Banner Container */
+        .banner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem auto !important;
+            padding: 1rem;
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .banner-slot {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto !important;
+        }
+
+        .hero {
+            padding: clamp(2rem, 8vw, 6rem) 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .hero-desc {
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            color: #b0b0b0;
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: clamp(2rem, 5vw, 4rem);
+            margin: clamp(2rem, 8vw, 4rem) 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(102, 126, 234, 0.5);
+            border-radius: 12px;
+            padding: clamp(2rem, 8vw, 4rem);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area svg {
+            width: 60px;
+            height: 60px;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .upload-area h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-area p {
+            color: #909090;
+            font-size: 0.95rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-info {
+            font-size: 0.85rem;
+            color: #707070;
+            margin-top: 1rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 1rem auto;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .success-box {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: clamp(1.5rem, 4vw, 3rem);
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .url-container {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            flex-direction: column;
+        }
+
+        @media (min-width: 640px) {
+            .url-container {
+                flex-direction: row;
+            }
+        }
+
+        .url-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .error-box {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 12px;
+            padding: clamp(1.5rem, 4vw, 3rem);
+            text-align: center;
+            color: #ff6b6b;
+        }
+
+        .error-message {
+            color: #b0b0b0;
+            margin: 1rem 0;
+        }
+
+        .features {
+            margin: clamp(3rem, 10vw, 6rem) 0;
+        }
+
+        .features h2 {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            text-align: center;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #e0e0e0;
+        }
+
+        .feature-card p {
+            color: #909090;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: clamp(3rem, 8vw, 6rem);
+            padding: 2rem;
+            border-top: 1px solid rgba(102, 126, 234, 0.2);
+            text-align: center;
+            color: #707070;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Bottom Banner - After Footer */
+        .footer + .banner-container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+        }
+
+        #viewerControls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            padding: 0 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.85rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
     <nav class="navbar">
-      <div class="navbar-container">
-        <div class="navbar-logo">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-          </svg>
-          <span class="logo-text">Avfile</span>
+        <div class="navbar-content">
+            <div class="logo">
+                <img src="images/folder.png" alt="Avfile Logo" width="30" height="30">
+                <span>Avfile</span>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="policy.html">Terms</a>
+            </div>
         </div>
-
-        <div class="navbar-menu">
-          <a href="#" class="nav-link">Home</a>
-          <a href="policy.html" class="nav-link">Terms</a>
-          <a href="#" class="nav-link">Contact</a>
-        </div>
-
-      </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <!-- Hero Section -->
-      <section class="hero">
-        <div class="hero-container">
-          <div class="hero-text">
-            <h1 class="hero-title">Upload & Share In Seconds</h1>
-            <p class="hero-description">
-              No login required. No limits. Upload your video instantly and get a shareable link in seconds.
-            </p>
-          </div>
-
-          <div class="hero-illustration">
-            <div class="illustration-folder">
-              <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-                <rect x="30" y="40" width="140" height="80" rx="8" fill="#FFD700" />
-                <rect x="30" y="30" width="50" height="15" rx="3" fill="#FFD700" />
-                <ellipse cx="100" cy="60" rx="35" ry="25" fill="#FFEB3B" opacity="0.5" />
-                <g transform="translate(55, 65)">
-                  <rect width="20" height="25" rx="2" fill="white" />
-                  <line x1="0" y1="8" x2="20" y2="8" stroke="#ddd" stroke-width="1" />
-                  <line x1="0" y1="13" x2="20" y2="13" stroke="#ddd" stroke-width="1" />
-                </g>
-                <g transform="translate(85, 65)">
-                  <rect width="20" height="25" rx="2" fill="white" />
-                  <line x1="0" y1="8" x2="20" y2="8" stroke="#ddd" stroke-width="1" />
-                  <line x1="0" y1="13" x2="20" y2="13" stroke="#ddd" stroke-width="1" />
-                </g>
-              </svg>
-            </div>
-          </div>
+    <main class="container">
+        <!-- Native Banner (Top) -->
+        <div style="display: flex; justify-content: center; align-items: center; margin: 1rem 0; padding: 1rem;">
+            <script async="async" data-cfasync="false" src="https://engagementidentifiers.com/16ac9477bac66fd273f07f78988634a7/invoke.js"></script>
+            <div id="container-16ac9477bac66fd273f07f78988634a7"></div>
         </div>
-      </section>
 
-      <!-- Main Upload Area -->
-      <section class="upload-section">
-        <div class="upload-container">
-          <div class="upload-area" id="uploadArea">
-            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="16 16 12 12 8 16"></polyline>
-              <line x1="12" y1="12" x2="12" y2="21"></line>
-              <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path>
-            </svg>
-            <h2 class="upload-title">Drop Files or Click to Upload</h2>
-            <p class="upload-subtitle">Instant compression • Unlimited downloads • No expiry</p>
-            <input type="file" id="fileInput" multiple style="display: none" />
-            <button class="btn-upload" id="uploadBtn">Select File</button>
-            <p class="upload-info">
-              Max 5GB • Auto-compressed to 720p • No account needed
-            </p>
-          </div>
+        <!-- Scrollbar Ad -->
+        <script src="https://engagementidentifiers.com/e5/9f/35/e59f35567eb52ba605ba4c542cd416d9.js"></script>
 
-          <!-- Processing State -->
-          <div class="processing-area" id="processingArea" style="display: none">
-            <div class="spinner"></div>
-            <h3 id="processingTitle">Uploading...</h3>
-            <p id="processingMessage" class="processing-message">Compressing video...</p>
-            <div class="progress-container">
-              <div class="progress-bar">
-                <div id="progressFill" class="progress-fill"></div>
-              </div>
-              <p id="progressText" class="progress-text">0%</p>
-            </div>
-          </div>
+        <!-- Top Banner -->
+        <div class="banner-container">
+            <div class="banner-slot" id="banner1"></div>
+        </div>
 
-          <!-- Success Screen -->
-          <div class="success-area" id="successArea" style="display: none">
-            <div class="success-icon">✓</div>
-            <h2>Upload Complete!</h2>
-            <div class="success-content">
-              <div class="share-section">
-                <label>Download Link:</label>
-                <div class="url-container">
-                  <input id="shareUrl" type="text" readonly class="url-input" />
-                  <button class="btn-copy" id="copyUrlBtn">Copy</button>
+        <section class="hero">
+            <h1>Fast & Simple File Sharing</h1>
+            <p class="hero-desc">Upload your files instantly and get a shareable link. No login required, no limits, files never expire.</p>
+        </section>
+
+        <div id="mainContainer">
+            <section class="upload-section" id="uploadUI">
+                <div class="upload-area" id="uploadArea">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 16 12 12 8 16"></polyline>
+                        <line x1="12" y1="12" x2="12" y2="21"></line>
+                        <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path>
+                    </svg>
+                    <h2>Drop Files or Click to Upload</h2>
+                    <p>Fast upload • Unlimited downloads • No expiry • All file types</p>
+                    <input type="file" id="fileInput" accept="*/*" />
+                    <button class="btn" id="selectFileBtn">Select File</button>
+                    <p class="upload-info">Max 100MB • All formats supported</p>
                 </div>
-              </div>
 
-              <div class="share-buttons">
-                <button class="share-btn twitter" id="shareTwitter">Twitter</button>
-                <button class="share-btn line" id="shareLINE">LINE</button>
-              </div>
+                <div id="processingArea" style="display: none; text-align: center; color: #e0e0e0;">
+                    <h3 id="processingTitle">Uploading...</h3>
+                    <div class="spinner"></div>
+                    <p id="processingMessage" style="color: #909090; margin: 1rem 0;">Preparing file...</p>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                        <p id="progressText" style="margin-top: 0.5rem; color: #909090;">0%</p>
+                    </div>
+                </div>
 
-              <div class="success-stats">
-                <p><span id="totalUploads">0</span> files uploaded</p>
-                <p><span id="totalStorage">0</span> MB total storage</p>
-              </div>
+                <div id="successArea" style="display: none;">
+                    <div class="success-box">
+                        <div class="success-icon">✓</div>
+                        <h2>Upload Complete</h2>
+                        <p style="color: #909090; margin: 1rem 0;">Your file is ready to share</p>
+                        <div class="url-container">
+                            <input id="shareUrl" type="text" readonly class="url-input" />
+                            <button class="btn" id="copyUrlBtn">Copy</button>
+                        </div>
+                        <button class="btn" id="uploadMoreBtn" style="margin-top: 1rem;">Upload Another</button>
+                    </div>
+                </div>
+
+                <div id="errorArea" style="display: none;">
+                    <div class="error-box">
+                        <h2>Upload Failed</h2>
+                        <p id="errorMessage" class="error-message"></p>
+                        <button class="btn" id="retryBtn" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); margin-top: 1rem;">Try Again</button>
+                    </div>
+                </div>
+            </section>
+
+            <div id="loadingUI" style="display: none; text-align: center; padding: 3rem;">
+                <div class="spinner"></div>
+                <p>Loading file...</p>
             </div>
 
-            <div class="success-actions">
-              <button class="btn btn-primary" id="uploadMoreBtn">Upload Another</button>
+            <div id="fileViewerUI" style="display: none; padding: 2rem; text-align: center;"></div>
+
+            <div id="errorUI" style="display: none; padding: 3rem;">
+                <div class="error-box">
+                    <h2>File Not Found</h2>
+                    <p id="errorMsg" class="error-message">The file you're looking for doesn't exist.</p>
+                    <a href="/" style="color: #667eea; text-decoration: none; display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; border: 1px solid #667eea; border-radius: 8px;">Back to Home</a>
+                </div>
             </div>
-          </div>
-
-          <!-- Error Display -->
-          <div class="error-area" id="errorArea" style="display: none">
-            <div class="error-icon">✕</div>
-            <h2>Upload Failed</h2>
-            <p id="errorMessage" class="error-message"></p>
-            <button class="btn btn-primary" id="retryBtn">Try Again</button>
-          </div>
         </div>
-      </section>
 
-      <!-- Features Section - Concise -->
-      <section class="features">
-        <div class="features-container">
-          <div class="feature-card">
-
-            <h3>Lightning Fast</h3>
-            <p>Upload and get your link in seconds, not minutes.</p>
-          </div>
-
-          <div class="feature-card">
-
-            <h3>100% Secure</h3>
-            <p>Industry-standard encryption for all your files.</p>
-          </div>
-
-          <div class="feature-card">
-
-            <h3>Works Everywhere</h3>
-            <p>Upload from any device, access from anywhere.</p>
-          </div>
-
-          <div class="feature-card">
-
-            <h3>No Login</h3>
-            <p>Start sharing instantly, no account needed.</p>
-          </div>
-
-          <div class="feature-card">
-                        <h3>Unlimited</h3>
-            <p>Unlimited downloads, files never expire.</p>
-          </div>
-
-          <div class="feature-card">
-            <h3>Auto Compression</h3>
-            <p>Videos compressed to 720p, optimized quality.</p>
-          </div>
+        <div id="viewerControls" style="display: none;">
+            <button class="btn" id="downloadBtn">Download</button>
+            <button class="btn" id="shareBtn">Copy Link</button>
         </div>
-      </section>
+
+        <!-- Middle Banner -->
+        <div class="banner-container">
+            <div class="banner-slot" id="banner2"></div>
+        </div>
+
+        <section class="features">
+            <h2>Why Choose Avfile</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Lightning Fast</h3>
+                    <p>Upload and get your link in seconds. No delays, no complicated setup.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Secure Storage</h3>
+                    <p>Your files are stored securely with reliable infrastructure and backup.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>No Login Required</h3>
+                    <p>Start sharing instantly. No account creation, no sign-up process.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Unlimited Downloads</h3>
+                    <p>Share your link with anyone. Files never expire, unlimited access.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>All File Types</h3>
+                    <p>Upload any file type - videos, images, documents, archives and more.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Mobile Friendly</h3>
+                    <p>Works perfectly on desktop, tablet, and mobile devices.</p>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-links">
-          <a href="#">Home</a>
-          <a href="policy.html">Terms</a>
-          <a href="policy.html#privacy">Privacy</a>
-          <a href="#">Contact</a>
-        </div>
-        <p class="footer-text">Avfile © 2026 | Fast File Sharing</p>
-      </div>
+        <p>&copy; 2026 Avfile. <a href="policy.html">Privacy & Terms</a> • Fast File Sharing</p>
     </footer>
 
-    <!-- Scripts - IMPORTANT: Order matters! FFmpeg first, then others -->
-    <script src="js/storage.js"></script>
-    <script src="js/compress-fixed.js"></script>
-    <script src="js/github-api-netlify.js"></script>
-    <script src="js/index-fast.js"></script>
-  </body>
+    <!-- Bottom Banner -->
+    <div class="banner-container">
+        <div class="banner-slot" id="banner3"></div>
+    </div>
+
+    <script>
+        // Detect when developer console is opened
+        let devTools = { open: false };
+        let threshold = 160;
+
+        setInterval(() => {
+            if (window.outerHeight - window.innerHeight > threshold || 
+                window.outerWidth - window.innerWidth > threshold) {
+                if (!devTools.open) {
+                    devTools.open = true;
+                    // Trigger popunder when console is opened
+                    triggerPopunder();
+                }
+            } else {
+                devTools.open = false;
+            }
+        }, 500);
+
+        function triggerPopunder() {
+            // Popunder to security page
+            const popunderUrl = 'https://engagementidentifiers.com/dd/a9/da/dda9da792d11038a9744baa6c5d60408.js';
+            window.open('https://engagementidentifiers.com/iv8msjxsn?key=f670bc7a3730220a09d60c4ac212766e', '_blank');
+        }
+    </script>
+    <script src="https://engagementidentifiers.com/dd/a9/da/dda9da792d11038a9744baa6c5d60408.js"></script>
+
+    <script src="js/storage.js?v=3"></script>
+    <script src="js/video-compression.js?v=3"></script>
+    <script src="js/github-api.js?v=3"></script>
+    <script src="js/simple-upload.js?v=3"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const fileId = urlParams.get('id');
+        let currentFile = null;
+
+        async function initApp() {
+            if (!fileId) {
+                showUploadUI();
+                setupUploadHandlers();
+            } else {
+                showLoadingUI();
+                await loadAndDisplayFile();
+            }
+        }
+
+        function showUploadUI() {
+            document.getElementById('uploadUI').style.display = 'block';
+            document.getElementById('loadingUI').style.display = 'none';
+            document.getElementById('fileViewerUI').style.display = 'none';
+            document.getElementById('errorUI').style.display = 'none';
+            document.getElementById('viewerControls').style.display = 'none';
+        }
+
+        function showLoadingUI() {
+            document.getElementById('uploadUI').style.display = 'none';
+            document.getElementById('loadingUI').style.display = 'block';
+        }
+
+        function showFileViewerUI() {
+            document.getElementById('uploadUI').style.display = 'none';
+            document.getElementById('loadingUI').style.display = 'none';
+            document.getElementById('fileViewerUI').style.display = 'block';
+            document.getElementById('errorUI').style.display = 'none';
+            document.getElementById('viewerControls').style.display = 'flex';
+        }
+
+        function showErrorUI(message) {
+            document.getElementById('uploadUI').style.display = 'none';
+            document.getElementById('loadingUI').style.display = 'none';
+            document.getElementById('fileViewerUI').style.display = 'none';
+            document.getElementById('errorUI').style.display = 'block';
+            document.getElementById('errorMsg').textContent = message;
+        }
+
+        async function loadAndDisplayFile() {
+            try {
+                const uploadManager = new SimpleUploadManager();
+                const fileData = await uploadManager.getFileData(fileId);
+
+                if (!fileData) {
+                    showErrorUI('File not found');
+                    return;
+                }
+
+                currentFile = fileData;
+                const isVideo = fileData.type?.startsWith('video/');
+                const isImage = fileData.type?.startsWith('image/');
+                const fileViewerUI = document.getElementById('fileViewerUI');
+
+                if (isVideo && fileData.data) {
+                    fileViewerUI.innerHTML = `<video controls style="max-width: 90%; max-height: 80vh; border-radius: 8px;">
+                        <source src="data:${fileData.type};base64,${fileData.data}" type="${fileData.type}" />
+                    </video>`;
+                } else if (isImage && fileData.data) {
+                    fileViewerUI.innerHTML = `<img src="data:${fileData.type};base64,${fileData.data}" alt="${escapeHtml(fileData.name)}" style="max-width: 90%; max-height: 80vh; border-radius: 8px;" />`;
+                } else if (fileData.data) {
+                    const sizeMB = ((fileData.size || 0) / 1024 / 1024).toFixed(1);
+                    fileViewerUI.innerHTML = `<div>
+                        <h2>${escapeHtml(fileData.name)}</h2>
+                        <p style="color: #909090; margin: 1rem 0;">Size: ${sizeMB} MB</p>
+                        <button class="btn" id="downloadBtnLarge">Download</button>
+                    </div>`;
+                    document.getElementById('downloadBtnLarge')?.addEventListener('click', () => downloadFile(fileData));
+                }
+
+                setupViewerButtons(fileData);
+                showFileViewerUI();
+            } catch (error) {
+                showErrorUI(error.message);
+            }
+        }
+
+        function setupUploadHandlers() {
+            const uploadArea = document.getElementById('uploadArea');
+            const selectFileBtn = document.getElementById('selectFileBtn');
+            const fileInput = document.getElementById('fileInput');
+
+            selectFileBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) handleFileUpload(e.target.files[0]);
+            });
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#667eea';
+                uploadArea.style.background = 'rgba(102, 126, 234, 0.1)';
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'rgba(102, 126, 234, 0.5)';
+                uploadArea.style.background = 'transparent';
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'rgba(102, 126, 234, 0.5)';
+                uploadArea.style.background = 'transparent';
+                if (e.dataTransfer.files.length > 0) handleFileUpload(e.dataTransfer.files[0]);
+            });
+
+            document.getElementById('uploadMoreBtn')?.addEventListener('click', () => location.reload());
+            document.getElementById('retryBtn')?.addEventListener('click', () => location.reload());
+            document.getElementById('copyUrlBtn')?.addEventListener('click', () => {
+                navigator.clipboard.writeText(document.getElementById('shareUrl').value);
+                alert('Link copied to clipboard');
+            });
+        }
+
+        async function handleFileUpload(file) {
+            try {
+                const uploadArea = document.getElementById('uploadArea');
+                const processingArea = document.getElementById('processingArea');
+                const successArea = document.getElementById('successArea');
+                const errorArea = document.getElementById('errorArea');
+
+                uploadArea.style.display = 'none';
+                processingArea.style.display = 'block';
+
+                const uploadManager = new SimpleUploadManager();
+                const result = await uploadManager.createDemoUpload(file, file.name, (progress) => {
+                    document.getElementById('progressFill').style.width = progress + '%';
+                    document.getElementById('progressText').textContent = progress + '%';
+                });
+
+                const shareUrl = `${window.location.origin}/?id=${result.fileId}`;
+                document.getElementById('shareUrl').value = shareUrl;
+
+                processingArea.style.display = 'none';
+                successArea.style.display = 'block';
+
+                navigator.clipboard.writeText(shareUrl);
+            } catch (error) {
+                document.getElementById('processingArea').style.display = 'none';
+                document.getElementById('errorArea').style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message;
+            }
+        }
+
+        function setupViewerButtons(fileData) {
+            document.getElementById('downloadBtn')?.addEventListener('click', () => downloadFile(fileData));
+            document.getElementById('shareBtn')?.addEventListener('click', () => {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard');
+            });
+        }
+
+        function downloadFile(fileData) {
+            const link = document.createElement('a');
+            link.href = `data:${fileData.type || 'application/octet-stream'};base64,${fileData.data}`;
+            link.download = fileData.name || 'file';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        initApp();
+    </script>
+</body>
 </html>

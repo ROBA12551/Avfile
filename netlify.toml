@@ -1,36 +1,125 @@
+# Netlify Configuration for Avfile
+
 [build]
-  command = "npm run build"
+  command = "echo 'Building Avfile...' && exit 0"
   publish = "."
   functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "18.17.0"
+  NODE_VERSION = "18"
+  NODE_ENV = "production"
+
+# Production environment variables
+[context.production.environment]
   GITHUB_TOKEN = ""
   GITHUB_OWNER = ""
-  GITHUB_REPO = ""
+  GITHUB_REPO = "avfile-storage"
   DISCORD_WEBHOOK_URL = ""
-  RATE_LIMIT_REQUESTS = "60"
-  RATE_LIMIT_WINDOW = "3600"
 
-[functions]
-  node_bundler = "esbuild"
+# HTTP Headers for JavaScript files - MOST SPECIFIC FIRST
+[[headers]]
+  for = "/js/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    X-Content-Type-Options = "nosniff"
 
+[[headers]]
+  for = "/js/video-compression.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    X-Content-Type-Options = "nosniff"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/js/github-api.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    X-Content-Type-Options = "nosniff"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/js/simple-upload.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    X-Content-Type-Options = "nosniff"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Content-Type = "text/html; charset=utf-8"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"
+
+# Redirects - Specific pages ONLY
+[[redirects]]
+  from = "/policy"
+  to = "/policy.html"
+  status = 200
+
+[[redirects]]
+  from = "/team"
+  to = "/policy.html"
+  status = 200
+
+[[redirects]]
+  from = "/upload"
+  to = "/upload.html"
+  status = 200
+
+[[redirects]]
+  from = "/debug"
+  to = "/debug.html"
+  status = 200
+
+# SPA Routes - only for query params and root
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+  force = true
+
+# Security headers
 [[headers]]
   for = "/api/*"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';"
 
 [[headers]]
   for = "/*"
   [headers.values]
     Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
 
-[[redirects]]
-  from = "/v/*"
-  to = "/v/index.html"
-  status = 200
+# Cache settings
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"

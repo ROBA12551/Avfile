@@ -1,0 +1,8 @@
+# Specific pages only
+/policy  /policy.html  200
+/team    /policy.html  200
+/upload  /upload.html  200
+/debug   /debug.html   200
+
+# Root and query params only - NOT catch-all
+/  /index.html  200
