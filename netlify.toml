@@ -16,6 +16,27 @@
   GITHUB_REPO = "avfile-storage"
   DISCORD_WEBHOOK_URL = ""
 
+# HTTP Headers
+[[headers]]
+  for = "/js/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/js/**"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
 # Redirects - Specific pages
 [[redirects]]
   from = "/policy"
