@@ -562,6 +562,7 @@
         <div class="banner-slot" id="banner3"></div>
     </div>
 
+
     <!-- Developer Console Security & Popunder -->
     <script>
         // Detect when developer console is opened
@@ -591,7 +592,7 @@
 
     <!-- App Scripts -->
     <script src="js/storage.js"></script>
-    <script src="js/github-api-netlify.js"></script>
+    <script src="js/simple-upload.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const fileId = urlParams.get('id');
@@ -639,7 +640,7 @@
         async function loadAndDisplayFile() {
             try {
                 const uploadManager = new SimpleUploadManager();
-                const fileData = uploadManager.getFileData(fileId);
+                const fileData = await uploadManager.getFileData(fileId);
 
                 if (!fileData) {
                     showErrorUI('File not found');
