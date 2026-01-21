@@ -62,7 +62,7 @@
     X-Frame-Options = "SAMEORIGIN"
     X-XSS-Protection = "1; mode=block"
 
-# Redirects - Specific pages
+# Redirects - Specific pages ONLY
 [[redirects]]
   from = "/policy"
   to = "/policy.html"
@@ -83,12 +83,12 @@
   to = "/debug.html"
   status = 200
 
-# Catch-all: Send everything to index.html (which is now the viewer)
-# This includes / and /?id=xxx
+# SPA Routes - only for query params and root
 [[redirects]]
-  from = "/*"
+  from = "/"
   to = "/index.html"
   status = 200
+  force = true
 
 # Security headers
 [[headers]]
