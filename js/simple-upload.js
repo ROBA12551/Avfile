@@ -138,6 +138,50 @@ class SimpleUploadManager {
   }
 
   /**
+   * IndexedDB にフォールバック
+   */
+  async fallbackToIndexedDB(fileBlob, fileName, onProgress) {
+    try {
+      console.log('📁 Fallback: Saving to IndexedDB...');
+      
+      onProgress(50, 'Saving to IndexedDB...');
+
+      const fileId = this.generateUUID();
+      const base64 = await this.fileToBase64(fileBlob);
+
+      const fileInfo = {
+        id: fileId,
+        name: fileName,
+        size: fileBlob.size,
+        type: fileBlob.type,
+        uploadedAt: new Date().toISOString(),
+        data: base64,
+      };
+
+      // IndexedDB に保存
+      await this.saveFileToIndexedDB(fileInfo);
+
+      onProgress(80, 'Saving metadata...');
+
+      // メタデータを localStorage に保存
+      this.saveMetadata(fileId, fileName, fileBlob.size, fileInfo.uploadedAt);
+
+      onProgress(100, 'Upload complete!');
+
+      return {
+        success: true,
+        fileName: fileName,
+        downloadUrl: `${window.location.origin}/?id=${fileId}`,
+        fileSize: fileBlob.size,
+        fileId: fileId,
+      };
+    } catch (error) {
+      console.error('❌ IndexedDB fallback error:', error.message);
+      throw error;
+    }
+  }
+
+  /**
    * メタデータを localStorage に保存（小サイズなので OK）
    */
   saveMetadata(fileId, fileName, fileSize, uploadedAt) {
@@ -162,8 +206,15 @@ class SimpleUploadManager {
   /**
    * デモモード - GitHub Releases にアップロード
    */
-  async createDemoUpload(fileBlob, fileName, onProgress = () => {}) {
+  async createDemoUpload(fileBlob, fileName, onProgress) {
     try {
+      // onProgress がない場合のデフォルト
+      if (typeof onProgress !== 'function') {
+        onProgress = (progress, message) => {
+          console.log(`[${progress}%] ${message}`);
+        };
+      }
+
       console.log('📁 Uploading to GitHub Releases...');
       
       onProgress(10, 'Checking file type...');
@@ -192,28 +243,33 @@ class SimpleUploadManager {
       const base64 = await this.fileToBase64(processedBlob);
       console.log(`📊 File size: ${fileBlob.size} bytes, Compressed: ${processedBlob.size} bytes`);
 
-      onProgress(50, 'Creating GitHub Release...');
-
       // GitHub に Netlify Function 経由でアップロード
-      const uploadResponse = await this.uploadToGitHub(fileId, fileName, base64, processedBlob.type);
+      try {
+        const uploadResponse = await this.uploadToGitHub(fileId, fileName, base64, processedBlob.type);
+        
+        onProgress(80, 'Saving metadata...');
 
-      onProgress(80, 'Saving metadata...');
+        // メタデータを localStorage に保存
+        this.saveMetadata(fileId, fileName, processedBlob.size, new Date().toISOString());
 
-      // メタデータを localStorage に保存
-      this.saveMetadata(fileId, fileName, processedBlob.size, new Date().toISOString());
+        onProgress(100, 'Upload complete!');
 
-      onProgress(100, 'Upload complete!');
+        console.log('✅ File uploaded to GitHub successfully');
 
-      console.log('✅ File uploaded to GitHub successfully');
-
-      return {
-        success: true,
-        fileName: fileName,
-        downloadUrl: uploadResponse.download_url,
-        fileSize: processedBlob.size,
-        fileId: fileId,
-        githubUrl: uploadResponse.html_url,
-      };
+        return {
+          success: true,
+          fileName: fileName,
+          downloadUrl: uploadResponse.download_url,
+          fileSize: processedBlob.size,
+          fileId: fileId,
+          githubUrl: uploadResponse.html_url,
+        };
+      } catch (githubError) {
+        console.warn('⚠️ GitHub upload failed, falling back to IndexedDB:', githubError.message);
+        
+        // GitHub アップロード失敗時は IndexedDB にフォールバック
+        return await this.fallbackToIndexedDB(processedBlob, fileName, onProgress);
+      }
     } catch (error) {
       console.error('❌ Upload error:', error.message);
       throw new Error(`Upload failed: ${error.message}`);
@@ -364,13 +420,22 @@ class SimpleUploadManager {
   }
 
   /**
-   * ファイルデータを取得（GitHub Releases から）
+   * ファイルデータを取得（GitHub Releases または IndexedDB）
    */
   async getFileData(fileId) {
     try {
+      console.log('📥 Fetching file...');
+
+      // まず IndexedDB をチェック
+      const indexedDBData = await this.getFileFromIndexedDB(fileId);
+      if (indexedDBData) {
+        console.log('✅ File found in IndexedDB');
+        return indexedDBData;
+      }
+
+      // IndexedDB になければ GitHub をチェック
       console.log('📥 Fetching file from GitHub Releases...');
 
-      // GitHub Releases から Release を取得
       const releaseTag = `video_${fileId}`;
       
       // Netlify Function 経由で Release 情報を取得
@@ -431,7 +496,7 @@ class SimpleUploadManager {
         data: base64,
       };
 
-      console.log('✅ File fetched successfully');
+      console.log('✅ File fetched successfully from GitHub');
       return fileInfo;
     } catch (error) {
       console.error('❌ Error getting file:', error.message);
