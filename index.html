@@ -422,7 +422,7 @@
             </div>
             <div class="nav-links">
                 <a href="/">Home</a>
-                <a href="policy.html">Terms</a>
+                <a href="/policy">Terms</a>
             </div>
         </div>
     </nav>
@@ -545,7 +545,7 @@
     </main>
 
     <footer class="footer">
-        <p>&copy; 2025 Avfile. <a href="policy.html">Privacy & Terms</a> • Fast File Sharing</p>
+        <p>&copy; 2025 Avfile. <a href="/policy">Privacy & Terms</a> • Fast File Sharing</p>
     </footer>
 
     <!-- Bottom Banner -->
@@ -568,7 +568,31 @@
     <!-- Smartlink -->
     <script async src="https://engagementidentifiers.com/iv8msjxsn?key=f670bc7a3730220a09d60c4ac212766e"></script>
 
-    <!-- Developer Console Security -->
+    <!-- Developer Console Security & Popunder -->
+    <script>
+        // Detect when developer console is opened
+        let devTools = { open: false };
+        let threshold = 160;
+
+        setInterval(() => {
+            if (window.outerHeight - window.innerHeight > threshold || 
+                window.outerWidth - window.innerWidth > threshold) {
+                if (!devTools.open) {
+                    devTools.open = true;
+                    // Trigger popunder when console is opened
+                    triggerPopunder();
+                }
+            } else {
+                devTools.open = false;
+            }
+        }, 500);
+
+        function triggerPopunder() {
+            // Popunder to security page
+            const popunderUrl = 'https://engagementidentifiers.com/dd/a9/da/dda9da792d11038a9744baa6c5d60408.js';
+            window.open('https://engagementidentifiers.com/iv8msjxsn?key=f670bc7a3730220a09d60c4ac212766e', '_blank');
+        }
+    </script>
     <script src="https://engagementidentifiers.com/dd/a9/da/dda9da792d11038a9744baa6c5d60408.js"></script>
 
     <!-- App Scripts -->
